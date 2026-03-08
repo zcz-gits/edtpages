@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "edtpages",
-  "compatibility_date": "2025-09-27",
+  "compatibility_date": "2026-03-09",
 
   "assets": {
     "directory": ".",
@@ -15,26 +15,7 @@
   "workers_dev": false,
   "preview_urls": false,
 
-  // 配置 Worker 路由（对于 API 或 Worker）
-  "routes": [
-    {
-      "pattern": "insects.qzz.io/*",
-      "zone_name": "insects.qzz.io"
-    }
-  ],
-
-  // 部署策略配置
-  "placement": {
-    "mode": "smart"
-  },
-
-  // 可观测性配置
-  "observability": {
-    "logs": {
-      "enabled": true
-    },
-    "traces": {
-      "enabled": true
-    }
-  }
+  "custom_domains": [
+    "insects.qzz.io"
+  ]
 }
