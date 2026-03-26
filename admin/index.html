@@ -569,6 +569,627 @@
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3)
         }
 
+        /* UUID easter egg */
+        #nodeUUID {
+            cursor: pointer;
+        }
+
+        .uuid-click-fx {
+            position: fixed;
+            left: 0;
+            top: 0;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9000000001;
+            color: #ef4444;
+            font-size: 16px;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+            opacity: 0;
+            white-space: nowrap;
+            animation: uuidClickCountPop 0.75s ease-out forwards;
+        }
+
+        @keyframes uuidClickCountPop {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -20%) scale(0.7);
+            }
+
+            15% {
+                opacity: 1;
+                transform: translate(-50%, -40%) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -130%) scale(1.1);
+            }
+        }
+
+        #uuidSnippetModal .modal {
+            width: 95%;
+            max-width: 1040px;
+            padding: 24px;
+            text-align: left;
+            border: 1px solid rgba(99, 102, 241, 0.16);
+            background:
+                radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 36%),
+                radial-gradient(circle at top right, rgba(168, 85, 247, 0.12), transparent 32%),
+                linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.96));
+            overflow: hidden;
+        }
+
+        #uuidSnippetModal .modal::before,
+        #uuidSnippetModal .modal::after {
+            content: '';
+            position: absolute;
+            pointer-events: none;
+            filter: blur(28px);
+            opacity: 0.85;
+        }
+
+        #uuidSnippetModal .modal::before {
+            inset: -120px auto auto -60px;
+            width: 260px;
+            height: 240px;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.18), transparent 72%);
+        }
+
+        #uuidSnippetModal .modal::after {
+            inset: auto -80px -120px auto;
+            width: 320px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(192, 132, 252, 0.18), transparent 72%);
+        }
+
+        #uuidSnippetTitle {
+            position: relative;
+            z-index: 1;
+            margin: 0 0 16px 0;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-align: center;
+            color: #0f172a;
+            text-shadow: 0 0 22px rgba(56, 189, 248, 0.14);
+        }
+
+        .uuid-snippet-stage {
+            --uuid-snippet-surface-radius: 18px;
+            position: relative;
+            margin-bottom: 0;
+            box-sizing: border-box;
+            border-radius: var(--uuid-snippet-surface-radius);
+            overflow: hidden;
+            background: linear-gradient(135deg, #020617 0%, #0f172a 42%, #020617 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 54px rgba(2, 6, 23, 0.3);
+            isolation: isolate;
+            transition: background 0.45s ease, box-shadow 0.45s ease;
+        }
+
+        .uuid-snippet-stage::before,
+        .uuid-snippet-stage::after {
+            content: '';
+            position: absolute;
+            pointer-events: none;
+            z-index: 0;
+            border-radius: 999px;
+            filter: blur(20px);
+            opacity: 0.8;
+            transition: opacity 0.45s ease;
+        }
+
+        .uuid-snippet-stage::before {
+            top: -80px;
+            left: -70px;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.2), transparent 72%);
+        }
+
+        .uuid-snippet-stage::after {
+            right: -90px;
+            bottom: -110px;
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.18), transparent 74%);
+        }
+
+        #uuidSnippetTextarea {
+            display: block;
+            position: relative;
+            z-index: 1;
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 380px;
+            max-height: 62vh;
+            padding: 22px 20px 20px;
+            border: 0;
+            border-radius: var(--uuid-snippet-surface-radius);
+            font-size: 11px;
+            line-height: 1.7;
+            background: linear-gradient(180deg, rgba(7, 13, 30, 0.94), rgba(2, 6, 23, 0.96)) !important;
+            color: #d8f3ff !important;
+            font-family: 'SFMono-Regular', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+            resize: vertical;
+            overflow: auto;
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.12), inset 0 0 40px rgba(6, 182, 212, 0.08);
+            transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1), transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), filter 0.75s ease, box-shadow 0.75s ease, border-color 0.45s ease;
+            tab-size: 4;
+            opacity: 0;
+            filter: blur(10px) saturate(0.75);
+            transform: scale(0.988);
+            pointer-events: none;
+            -webkit-user-select: none;
+            user-select: none;
+            box-shadow: inset 0 0 0 1px rgba(103, 232, 249, 0.04);
+        }
+
+        .uuid-snippet-stage.is-ready,
+        .uuid-snippet-stage.is-error {
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .uuid-snippet-stage.is-ready::before,
+        .uuid-snippet-stage.is-ready::after,
+        .uuid-snippet-stage.is-error::before,
+        .uuid-snippet-stage.is-error::after {
+            opacity: 0;
+        }
+
+        #uuidSnippetTextarea::selection {
+            background: rgba(56, 189, 248, 0.32);
+            color: #fff;
+        }
+
+        #uuidSnippetDisplay {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            box-sizing: border-box;
+            opacity: 1;
+            visibility: visible;
+            transform: none;
+            transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s ease;
+            pointer-events: none;
+            border-radius: var(--uuid-snippet-surface-radius);
+            overflow: hidden;
+            background: linear-gradient(145deg, rgba(2, 6, 23, 0.94), rgba(2, 6, 23, 0.76));
+        }
+
+        .uuid-snippet-stage.is-processing #uuidSnippetDisplay,
+        .uuid-snippet-stage.is-revealing #uuidSnippetDisplay,
+        .uuid-snippet-stage.is-ready #uuidSnippetDisplay,
+        .uuid-snippet-stage.is-error #uuidSnippetDisplay {
+            opacity: 1;
+            visibility: visible;
+            transform: none;
+        }
+
+        .uuid-snippet-stage.is-ready #uuidSnippetDisplay,
+        .uuid-snippet-stage.is-ready #uuidSnippetDisplay * {
+            animation-play-state: paused !important;
+        }
+
+        .uuid-snippet-display-grid {
+            position: absolute;
+            inset: -20%;
+            background-image: linear-gradient(rgba(34, 211, 238, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.08) 1px, transparent 1px);
+            background-size: 26px 26px;
+            -webkit-mask-image: radial-gradient(circle at center, #000 30%, transparent 82%);
+            mask-image: radial-gradient(circle at center, #000 30%, transparent 82%);
+            opacity: 0.65;
+            animation: uuidSnippetGridDrift 16s linear infinite;
+        }
+
+        .uuid-snippet-display-scanline {
+            position: absolute;
+            inset: -20% 0 auto;
+            height: 120px;
+            background: linear-gradient(180deg, transparent, rgba(125, 211, 252, 0.22), transparent);
+            filter: blur(8px);
+            animation: uuidSnippetScan 4.6s linear infinite;
+        }
+
+        .uuid-snippet-display-rings {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 280px;
+            height: 280px;
+            transform: translate(-50%, -48%);
+        }
+
+        .uuid-snippet-display-rings span {
+            position: absolute;
+            inset: 0;
+            border: 1px solid rgba(103, 232, 249, 0.18);
+            border-radius: 50%;
+            box-shadow: 0 0 22px rgba(56, 189, 248, 0.12), inset 0 0 18px rgba(56, 189, 248, 0.08);
+            animation: uuidSnippetCoreSpin 12s linear infinite;
+        }
+
+        .uuid-snippet-display-rings span:nth-child(2) {
+            inset: 28px;
+            border-color: rgba(192, 132, 252, 0.2);
+            animation-direction: reverse;
+            animation-duration: 8s;
+        }
+
+        .uuid-snippet-display-rings span:nth-child(3) {
+            inset: 56px;
+            border-color: rgba(14, 165, 233, 0.28);
+            animation-duration: 5.6s;
+        }
+
+        .uuid-snippet-display-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 360px;
+            height: 360px;
+            transform: translate(-50%, -48%);
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.18), rgba(15, 23, 42, 0) 68%);
+            filter: blur(10px);
+            animation: uuidSnippetAuraPulse 3s ease-in-out infinite;
+        }
+
+        .uuid-snippet-display-center {
+            position: absolute;
+            inset: 0;
+        }
+
+        .uuid-snippet-display-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 112px;
+            height: 112px;
+            transform: translate(-50%, -50%) rotate(45deg);
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(59, 130, 246, 0.14) 48%, rgba(168, 85, 247, 0.16));
+            border: 1px solid rgba(186, 230, 253, 0.18);
+            box-shadow: 0 0 34px rgba(56, 189, 248, 0.18), inset 0 0 26px rgba(255, 255, 255, 0.08);
+            animation: uuidSnippetCoreFloat 2.6s ease-in-out infinite;
+        }
+
+        .uuid-snippet-display-core span {
+            position: absolute;
+            inset: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 18px;
+        }
+
+        .uuid-snippet-display-core span:nth-child(2) {
+            inset: 30px;
+            border-color: rgba(125, 211, 252, 0.32);
+        }
+
+        .uuid-snippet-display-core span:nth-child(3) {
+            inset: 42px;
+            border-color: rgba(196, 181, 253, 0.28);
+        }
+
+        .uuid-snippet-display-beam {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: min(72%, 620px);
+            height: 1px;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.8), rgba(168, 85, 247, 0.65), transparent);
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.38);
+            animation: uuidSnippetBeam 2.2s ease-in-out infinite;
+        }
+
+        #uuidSnippetPreview {
+            position: relative;
+            z-index: 2;
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 24px 28px;
+            border-radius: calc(var(--uuid-snippet-surface-radius) - 1px);
+            border: 0;
+            background: linear-gradient(180deg, rgba(2, 6, 23, 0.74), rgba(2, 6, 23, 0.54));
+            color: rgba(186, 230, 253, 0.9);
+            font-size: 11px;
+            line-height: 1.55;
+            letter-spacing: 0.04em;
+            text-shadow: 0 0 12px rgba(125, 211, 252, 0.12);
+            box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.12), inset 0 0 28px rgba(8, 47, 73, 0.5);
+            white-space: pre-wrap;
+            overflow: hidden;
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+        }
+
+        .uuid-snippet-buttons {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 116px;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn-uuid-copy {
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            min-width: 0;
+            min-height: 52px;
+            border: 0;
+            border-radius: 12px;
+            --uuid-copy-progress: 0%;
+            background: linear-gradient(135deg, rgba(29, 78, 216, 0.92) 0, rgba(79, 70, 229, 0.92) 100%);
+            color: #fff;
+            box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 10px 24px rgba(37, 99, 235, 0.24);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .btn-uuid-copy::before,
+        .btn-uuid-copy::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border-radius: inherit;
+        }
+
+        .btn-uuid-copy::before {
+            background: linear-gradient(90deg, rgba(34, 211, 238, 0.88) 0%, rgba(96, 165, 250, 0.94) 48%, rgba(192, 132, 252, 0.9) 100%);
+            clip-path: inset(0 calc(100% - var(--uuid-copy-progress)) 0 0);
+            opacity: 0.9;
+            transition: clip-path 0.24s ease-out, opacity 0.24s ease;
+        }
+
+        .btn-uuid-copy::after {
+            background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.18) 45%, transparent 72%);
+            transform: translateX(calc(var(--uuid-copy-progress) - 100%));
+            opacity: 0.6;
+            mix-blend-mode: screen;
+            transition: transform 0.28s ease-out, opacity 0.28s ease;
+        }
+
+        .uuid-copy-btn-label {
+            position: relative;
+            z-index: 1;
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            letter-spacing: 0.04em;
+        }
+
+        .btn-uuid-copy:hover:not([disabled]) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-uuid-copy:active:not([disabled]) {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+            transition-duration: 0.06s;
+        }
+
+        .btn-uuid-copy[disabled] {
+            opacity: 1;
+            cursor: wait;
+            transform: none;
+            color: #eff6ff;
+            box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 22px rgba(14, 165, 233, 0.18);
+        }
+
+        .btn-uuid-copy[disabled][data-phase="fail"] {
+            background: linear-gradient(135deg, rgba(153, 27, 27, 0.94) 0, rgba(220, 38, 38, 0.92) 100%);
+            box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 22px rgba(239, 68, 68, 0.14);
+        }
+
+        .btn-uuid-copy[disabled][data-phase="fail"]::before {
+            background: linear-gradient(90deg, rgba(251, 113, 133, 0.9), rgba(239, 68, 68, 0.94));
+        }
+
+        .btn-uuid-copy[data-phase="ready"] {
+            background: linear-gradient(135deg, #2563eb 0, #1d4ed8 100%);
+            box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 10px 24px rgba(37, 99, 235, 0.28);
+        }
+
+        .btn-uuid-copy[data-phase="ready"]::before {
+            opacity: 1;
+        }
+
+        .btn-uuid-close {
+            box-sizing: border-box;
+            min-height: 52px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #e5e7eb 0, #d1d5db 100%);
+            color: #374151;
+        }
+
+        .btn-uuid-close:hover {
+            background: linear-gradient(135deg, #d1d5db 0, #b3b8be 100%);
+        }
+
+        html.dark-mode #uuidSnippetModal .modal {
+            border-color: rgba(103, 232, 249, 0.14);
+            background:
+                radial-gradient(circle at top left, rgba(8, 145, 178, 0.12), transparent 36%),
+                radial-gradient(circle at top right, rgba(126, 34, 206, 0.14), transparent 32%),
+                linear-gradient(160deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.96));
+        }
+
+        html.dark-mode #uuidSnippetTitle {
+            color: #f8fafc;
+        }
+
+        html.dark-mode .btn-uuid-close {
+            background: linear-gradient(135deg, #374151 0, #2b3340 100%);
+            color: #f3f4f6;
+        }
+
+        html.dark-mode .btn-uuid-close:hover {
+            background: linear-gradient(135deg, #4b5563 0, #374151 100%);
+        }
+
+        @media (max-width: 768px) {
+            #uuidSnippetModal .modal {
+                padding: 18px;
+            }
+
+            .uuid-snippet-stage {
+                --uuid-snippet-surface-radius: 18px;
+            }
+
+            #uuidSnippetTextarea {
+                min-height: 300px;
+                max-height: 58vh;
+                padding: 18px 16px;
+                font-size: 10px;
+            }
+
+            .uuid-snippet-display-center {
+                inset: 0;
+            }
+
+            .uuid-snippet-display-rings {
+                width: 220px;
+                height: 220px;
+            }
+
+            .uuid-snippet-display-pulse {
+                width: 300px;
+                height: 300px;
+            }
+
+            #uuidSnippetPreview {
+                padding: 18px 16px;
+                font-size: 10px;
+            }
+
+            .uuid-snippet-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @keyframes uuidSnippetGridDrift {
+            0% {
+                transform: translate3d(0, 0, 0);
+            }
+
+            100% {
+                transform: translate3d(-26px, -26px, 0);
+            }
+        }
+
+        @keyframes uuidSnippetScan {
+            0% {
+                transform: translateY(-180%);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 0.95;
+            }
+
+            85% {
+                opacity: 0.12;
+            }
+
+            100% {
+                transform: translateY(520%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes uuidSnippetCoreSpin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes uuidSnippetAuraPulse {
+
+            0%,
+            100% {
+                opacity: 0.42;
+                transform: translate(-50%, -48%) scale(0.88);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -48%) scale(1.08);
+            }
+        }
+
+        @keyframes uuidSnippetCoreFloat {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) rotate(45deg) scale(0.96);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) rotate(45deg) scale(1.04);
+            }
+        }
+
+        @keyframes uuidSnippetBeam {
+
+            0%,
+            100% {
+                opacity: 0.52;
+                transform: translate(-50%, -50%) scaleX(0.86);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scaleX(1.05);
+            }
+        }
+
+        @keyframes uuidSnippetTextareaReveal {
+            0% {
+                opacity: 0.12;
+                filter: blur(12px);
+                transform: scale(0.986) translateY(8px);
+            }
+
+            45% {
+                opacity: 0.72;
+            }
+
+            100% {
+                opacity: 1;
+                filter: none;
+                transform: none;
+            }
+        }
+
+        @keyframes uuidSnippetBadgePulse {
+
+            0%,
+            100% {
+                border-color: rgba(125, 211, 252, 0.22);
+                box-shadow: inset 0 0 16px rgba(14, 165, 233, 0.08), 0 0 0 rgba(34, 211, 238, 0);
+            }
+
+            50% {
+                border-color: rgba(103, 232, 249, 0.46);
+                box-shadow: inset 0 0 16px rgba(14, 165, 233, 0.16), 0 0 18px rgba(34, 211, 238, 0.18);
+            }
+        }
+
         /* 消息提示 */
         .message {
             margin-top: 24px;
@@ -839,7 +1460,9 @@
             transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .social-link::before {
@@ -4558,6 +5181,67 @@
             display: block;
         }
 
+        #transportGrpcModal {
+            z-index: 2100000000;
+        }
+
+        #transportGrpcModal .modal {
+            max-width: 500px;
+            z-index: 2100000001;
+        }
+
+        .grpc-modal-path {
+            margin: 0 0 16px 0;
+            padding: 12px;
+            border-radius: 8px;
+            background: #fff5f5;
+            border: 1px solid #ffcdd2;
+            text-align: left;
+            font-size: 13px;
+            font-family: Consolas, Monaco, 'Courier New', monospace;
+            line-height: 1.7;
+            color: #b71c1c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        html.dark-mode .grpc-modal-path {
+            background: #4a2424;
+            border-color: #7f1d1d;
+            color: #ffb4ae;
+        }
+
+        .grpc-modal-path-icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            fill: currentColor;
+        }
+
+        .grpc-modal-confirm-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+        }
+
+        .grpc-modal-confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(22, 163, 74, 0.45);
+            background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+        }
+
+        .grpc-modal-confirm-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
+        }
+
+        html.dark-mode .grpc-modal-confirm-btn {
+            background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+        }
+
         .tooltip-header {
             font-weight: bold;
             margin-bottom: 10px;
@@ -5638,6 +6322,9 @@ www.visa.cn#优选域名
 API示例：
 https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressesapi.txt
 
+优选订阅生成器示例：
+sub://sub.cmliussss.net#CM优选订阅
+
 其他节点示例：
 vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tls&type=ws&host=edt-pages.github.io&path=%2F#edgetunnel"
                                     onchange="markModified('sub')"></textarea>
@@ -6335,8 +7022,8 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 
             <!-- 请求方案选择 -->
             <div class="form-group subapi-form-group">
-                <label>请求方案</label>
-                <select id="cloudflareAuthMethod" title="请求方案" onchange="updateCloudflareAuthMethod()">
+                <label>请选择统计方案</label>
+                <select id="cloudflareAuthMethod" title="请求统计方案" onchange="updateCloudflareAuthMethod()">
                     <option id="usageapiOption" value="usageapi">UsageAPI（支持多账号统计）</option>
                     <option value="accountid">Account ID + API Token</option>
                     <option value="email">Email + Global API Key</option>
@@ -6559,6 +7246,41 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             <div class="btn-append-results" style="display: none;"></div>
         </div>
     </div>
+    </div>
+
+    <!-- Snippet.js 生成弹窗 -->
+    <div class="modal-overlay" id="uuidSnippetModal">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h2 id="uuidSnippetTitle">💎 生成专属 Snippet.js 源码</h2>
+            <div class="form-group uuid-snippet-stage" id="uuidSnippetStage" style="margin-bottom: 0;">
+                <textarea id="uuidSnippetTextarea" title="生成专属 Snippet.js 源码" readonly spellcheck="false"></textarea>
+                <div id="uuidSnippetDisplay" aria-hidden="true">
+                    <div class="uuid-snippet-display-grid"></div>
+                    <div class="uuid-snippet-display-scanline"></div>
+                    <div class="uuid-snippet-display-rings">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="uuid-snippet-display-pulse"></div>
+                    <div class="uuid-snippet-display-center">
+                        <div class="uuid-snippet-display-core">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <div class="uuid-snippet-display-beam"></div>
+                        <pre id="uuidSnippetPreview">Initializing secure renderer...</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="uuid-snippet-buttons">
+                <button type="button" class="btn btn-uuid-copy" id="uuidSnippetCopyBtn" onclick="copyUUIDSnippetCode()"
+                    data-phase="boot" disabled><span class="uuid-copy-btn-label"
+                        id="uuidSnippetCopyBtnLabel">等待源码重组完成</span></button>
+                <button type="button" class="btn btn-uuid-close" onclick="closeUUIDSnippetModal()">关闭</button>
+            </div>
+        </div>
     </div>
 
     <!-- ProxyIP 帮助科普弹窗 -->
@@ -7203,6 +7925,40 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                         取消
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- gRPC 功能提示弹窗 -->
+    <div class="modal-overlay" id="transportGrpcModal" onclick="closeTransportGrpcModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button type="button" class="modal-close" onclick="hideTransportGrpcTooltip()">×</button>
+            <div style="text-align: center; padding: 20px 0;">
+                <h2 style="color: #f44336; margin: 0 0 16px 0; font-size: 22px; font-weight: 700;">⚠️ gRPC 功能提示</h2>
+                <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.6; text-align: left;">
+                    当前你选择了 <strong>XHTTP</strong> 或 <strong>gRPC</strong> 传输协议。
+                </p>
+                <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.6; text-align: left; color: #f44336;">
+                    请前往 <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer">Cloudflare
+                        面板</a> 为当前域名开启
+                    <strong>gRPC</strong>，否则节点可能无法连接。
+                </p>
+                <div class="grpc-modal-path">
+                    <svg class="grpc-modal-path-icon" role="presentation" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                        <path
+                            d="M8 1.363A5.083 5.083 0 002.922 6.44c0 3.5 4.448 9.25 4.638 9.48h.785c.195-.25 4.732-6 4.732-9.485A5.083 5.083 0 008 1.363zm-.043 13.42c-1.08-1.478-4.035-5.75-4.035-8.343a4.078 4.078 0 118.155 0c0 2.588-3.017 6.867-4.12 8.343z">
+                        </path>
+                        <path
+                            d="M7.98 4.25a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5zm0 3.5A1.25 1.25 0 119.23 6.5a1.25 1.25 0 01-1.25 1.268V7.75z">
+                        </path>
+                    </svg>
+                    <span>网络 (Network) &gt; gRPC &gt; 开启 ✅</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button type="button" class="btn grpc-modal-confirm-btn" onclick="hideTransportGrpcTooltip()">我已开启
+                    gRPC</button>
             </div>
         </div>
     </div>
@@ -8100,8 +8856,41 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             grpcModeGroup.style.display = hasGrpcModeField && transportSelect.value === 'grpc' ? '' : 'none';
         }
 
+        function showTransportGrpcTooltip() {
+            const modal = document.getElementById('transportGrpcModal');
+            if (!modal) return;
+            modal.classList.add('show');
+        }
+
+        function hideTransportGrpcTooltip() {
+            const modal = document.getElementById('transportGrpcModal');
+            if (!modal) return;
+            modal.classList.remove('show');
+        }
+
+        function closeTransportGrpcModal(event) {
+            if (event && event.target && event.target.id !== 'transportGrpcModal') {
+                return;
+            }
+            hideTransportGrpcTooltip();
+        }
+
+        function updateTransportGrpcTooltipVisibility(showWhenSupportedTransport = false) {
+            const transportSelect = document.getElementById('transport');
+            if (!transportSelect) return;
+
+            const needsGrpcNotice = transportSelect.value === 'xhttp' || transportSelect.value === 'grpc';
+            if (needsGrpcNotice && showWhenSupportedTransport) {
+                showTransportGrpcTooltip();
+                return;
+            }
+
+            hideTransportGrpcTooltip();
+        }
+
         function handleTransportChange() {
             updateGrpcModeVisibility();
+            updateTransportGrpcTooltipVisibility(true);
             markModified('config');
         }
 
@@ -8116,6 +8905,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             if (!hasGrpcModeField) {
                 transportGroup.style.display = 'none';
                 grpcModeGroup.style.display = 'none';
+                hideTransportGrpcTooltip();
                 return;
             }
 
@@ -8132,6 +8922,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             }
 
             updateGrpcModeVisibility();
+            updateTransportGrpcTooltipVisibility(false);
         }
 
         function updateProtocol() {
@@ -9506,6 +10297,849 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             }, 3000);
         }
 
+        // UUID easter egg
+        const UUID_EASTER_TARGET_COUNT = 10;
+        const UUID_EASTER_HINT_START = 5;
+        const UUID_EASTER_MAX_INTERVAL = 1000;
+        const UUID_EASTER_RESET_DELAY = 1400;
+        const UUID_EASTER_FX_VERTICAL_OFFSET = 12;
+        const UUID_SNIPPETS_JS_URL = 'https://raw.githubusercontent.com/EDT-Pages/EDT.min.js/Snippets/EDT.min.js';
+        const UUID_SNIPPETS_DICT_URL = 'https://raw.githubusercontent.com/EDT-Pages/EDT.min.js/Snippets/字典.json';
+
+        let uuidEasterClickCount = 0;
+        let uuidEasterLastClickAt = 0;
+        let uuidEasterResetTimer = null;
+        let uuidSnippetLoading = false;
+        let uuidSnippetDisplayProgressTimer = null;
+        let uuidSnippetDisplayPreviewTimer = null;
+        let uuidSnippetDisplayRevealFrame = null;
+        let uuidSnippetDisplayReleaseTimer = null;
+        let uuidSnippetDisplayToken = 0;
+        let uuidSnippetDisplayProgressValue = 0;
+        let uuidSnippetDisplayProgressTarget = 0;
+        let uuidSnippetRawCode = '';
+        const uuidSnippetLastLiteralVariants = new Map();
+
+        const UUID_SNIPPET_REVEAL_CHARSET = '01<>/\\\\{}[]=+-_*#@$%&ABCDEFGHJKLMNPQRSTUVWXYZ';
+        const UUID_SNIPPET_STATUS_TEXT = {
+            boot: 'BOOT',
+            sync: 'SYNC',
+            bind: 'BIND',
+            mesh: 'MESH',
+            reveal: 'REVEAL',
+            fail: 'FAIL'
+        };
+
+        function resetNodeUUIDEasterCount() {
+            uuidEasterClickCount = 0;
+            uuidEasterLastClickAt = 0;
+            if (uuidEasterResetTimer) {
+                clearTimeout(uuidEasterResetTimer);
+                uuidEasterResetTimer = null;
+            }
+        }
+
+        function showNodeUUIDClickFx(clickCount, clientX, clientY, fallbackEl) {
+            const rect = fallbackEl.getBoundingClientRect();
+            const baseX = Number.isFinite(clientX) ? clientX : rect.left + rect.width / 2;
+            const baseY = Number.isFinite(clientY) ? clientY : rect.top + rect.height / 2;
+            const x = baseX + (Math.random() * 14 - 7);
+            const y = baseY - UUID_EASTER_FX_VERTICAL_OFFSET + (Math.random() * 8 - 4);
+
+            const fx = document.createElement('div');
+            fx.className = 'uuid-click-fx';
+            fx.textContent = 'x' + clickCount;
+            fx.style.left = x + 'px';
+            fx.style.top = y + 'px';
+            document.body.appendChild(fx);
+
+            setTimeout(() => fx.remove(), 850);
+        }
+
+        function sha224(s) {
+            const K = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
+            const r = (n, b) => ((n >>> b) | (n << (32 - b))) >>> 0;
+            s = unescape(encodeURIComponent(s));
+            const l = s.length * 8;
+            s += String.fromCharCode(0x80);
+            while ((s.length * 8) % 512 !== 448) s += String.fromCharCode(0);
+            const h = [0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4];
+            const hi = Math.floor(l / 0x100000000);
+            const lo = l & 0xFFFFFFFF;
+            s += String.fromCharCode((hi >>> 24) & 0xFF, (hi >>> 16) & 0xFF, (hi >>> 8) & 0xFF, hi & 0xFF, (lo >>> 24) & 0xFF, (lo >>> 16) & 0xFF, (lo >>> 8) & 0xFF, lo & 0xFF);
+            const w = [];
+            for (let i = 0; i < s.length; i += 4) {
+                w.push((s.charCodeAt(i) << 24) | (s.charCodeAt(i + 1) << 16) | (s.charCodeAt(i + 2) << 8) | s.charCodeAt(i + 3));
+            }
+            for (let i = 0; i < w.length; i += 16) {
+                const x = new Array(64).fill(0);
+                for (let j = 0; j < 16; j++) x[j] = w[i + j];
+                for (let j = 16; j < 64; j++) {
+                    const s0 = r(x[j - 15], 7) ^ r(x[j - 15], 18) ^ (x[j - 15] >>> 3);
+                    const s1 = r(x[j - 2], 17) ^ r(x[j - 2], 19) ^ (x[j - 2] >>> 10);
+                    x[j] = (x[j - 16] + s0 + x[j - 7] + s1) >>> 0;
+                }
+                let [a, b, c, d, e, f, g, h0] = h;
+                for (let j = 0; j < 64; j++) {
+                    const S1 = r(e, 6) ^ r(e, 11) ^ r(e, 25);
+                    const ch = (e & f) ^ (~e & g);
+                    const t1 = (h0 + S1 + ch + K[j] + x[j]) >>> 0;
+                    const S0 = r(a, 2) ^ r(a, 13) ^ r(a, 22);
+                    const maj = (a & b) ^ (a & c) ^ (b & c);
+                    const t2 = (S0 + maj) >>> 0;
+                    h0 = g;
+                    g = f;
+                    f = e;
+                    e = (d + t1) >>> 0;
+                    d = c;
+                    c = b;
+                    b = a;
+                    a = (t1 + t2) >>> 0;
+                }
+                for (let j = 0; j < 8; j++) {
+                    h[j] = (h[j] + (j === 0 ? a : j === 1 ? b : j === 2 ? c : j === 3 ? d : j === 4 ? e : j === 5 ? f : j === 6 ? g : h0)) >>> 0;
+                }
+            }
+            let hex = '';
+            for (let i = 0; i < 7; i++) {
+                for (let j = 24; j >= 0; j -= 8) hex += ((h[i] >>> j) & 0xFF).toString(16).padStart(2, '0');
+            }
+            return hex;
+        }
+
+        function closeUUIDSnippetModal() {
+            const modal = document.getElementById('uuidSnippetModal');
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+
+        function getUUIDSnippetDisplayElements() {
+            return {
+                stage: document.getElementById('uuidSnippetStage'),
+                textarea: document.getElementById('uuidSnippetTextarea'),
+                preview: document.getElementById('uuidSnippetPreview'),
+                copyBtn: document.getElementById('uuidSnippetCopyBtn'),
+                copyBtnLabel: document.getElementById('uuidSnippetCopyBtnLabel')
+            };
+        }
+
+        function clearUUIDSnippetDisplayTimers() {
+            if (uuidSnippetDisplayProgressTimer) {
+                clearInterval(uuidSnippetDisplayProgressTimer);
+                uuidSnippetDisplayProgressTimer = null;
+            }
+            if (uuidSnippetDisplayPreviewTimer) {
+                clearInterval(uuidSnippetDisplayPreviewTimer);
+                uuidSnippetDisplayPreviewTimer = null;
+            }
+            if (uuidSnippetDisplayReleaseTimer) {
+                clearTimeout(uuidSnippetDisplayReleaseTimer);
+                uuidSnippetDisplayReleaseTimer = null;
+            }
+            if (uuidSnippetDisplayRevealFrame) {
+                cancelAnimationFrame(uuidSnippetDisplayRevealFrame);
+                uuidSnippetDisplayRevealFrame = null;
+            }
+        }
+
+        function setUUIDSnippetStageState(state) {
+            const { stage } = getUUIDSnippetDisplayElements();
+            if (!stage) {
+                return;
+            }
+            stage.classList.remove('is-processing', 'is-revealing', 'is-ready', 'is-error');
+            if (state) {
+                stage.classList.add(`is-${state}`);
+            }
+        }
+
+        function setUUIDSnippetDisplayStatus(label, meta, badgeKey) {
+            const { copyBtn, copyBtnLabel } = getUUIDSnippetDisplayElements();
+            if (copyBtn) {
+                copyBtn.dataset.phase = badgeKey || 'boot';
+                copyBtn.title = meta ? `${label}：${meta}` : (label || '');
+                copyBtn.setAttribute('aria-label', meta ? `${label}：${meta}` : (label || ''));
+            }
+            if (copyBtnLabel && copyBtn?.disabled) {
+                copyBtnLabel.textContent = badgeKey === 'fail' ? '源码重组失败' : '等待源码重组完成';
+            }
+        }
+
+        function setUUIDSnippetProgress(progress) {
+            const { copyBtn } = getUUIDSnippetDisplayElements();
+            uuidSnippetDisplayProgressValue = Math.max(0, Math.min(100, progress));
+            if (copyBtn) {
+                copyBtn.style.setProperty('--uuid-copy-progress', `${Math.max(uuidSnippetDisplayProgressValue, 2)}%`);
+            }
+        }
+
+        function updateUUIDSnippetProcessingStage(targetProgress, badgeKey, label, meta) {
+            uuidSnippetDisplayProgressTarget = Math.max(uuidSnippetDisplayProgressTarget, targetProgress);
+            setUUIDSnippetDisplayStatus(label, meta, badgeKey);
+        }
+
+        function createUUIDSnippetRandom(seedText) {
+            let seed = 2166136261;
+            const text = String(seedText || 'vault');
+            for (let i = 0; i < text.length; i++) {
+                seed ^= text.charCodeAt(i);
+                seed = Math.imul(seed, 16777619);
+            }
+            return function nextRandom() {
+                seed += 0x6D2B79F5;
+                let value = seed;
+                value = Math.imul(value ^ (value >>> 15), value | 1);
+                value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+                return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+
+        function buildUUIDSnippetLoadingFrame(uuidValue, frameIndex) {
+            const verbs = ['sync', 'fold', 'mesh', 'seal', 'splice', 'phase', 'stream', 'prime'];
+            const nouns = ['lattice', 'entropy', 'cipher', 'matrix', 'vault', 'signal', 'kernel', 'mirror'];
+            const tags = ['SCAN', 'TRACE', 'PULSE', 'FOLD', 'LINK', 'HASH'];
+            const compactUUID = (uuidValue || '').replace(/-/g, '').toUpperCase() || 'VOID0000';
+            const random = createUUIDSnippetRandom(`${compactUUID}:${frameIndex}`);
+            const pick = (pool) => pool[Math.floor(random() * pool.length) % pool.length];
+            const sliceHex = (offset, size) => {
+                const safeSize = Math.max(1, size);
+                const start = offset % Math.max(compactUUID.length, safeSize);
+                return (compactUUID.slice(start, start + safeSize) || compactUUID.slice(0, safeSize)).padEnd(safeSize, '0');
+            };
+
+            const lines = [
+                `// Quantum vault handshake :: ${sliceHex(frameIndex, 4)}-${sliceHex(frameIndex + 4, 4)} :: frame ${String(frameIndex).padStart(2, '0')}`,
+                `const shard_${sliceHex(frameIndex + 2, 6).toLowerCase()} = prism.${pick(verbs)}("${sliceHex(frameIndex + 8, 8)}");`
+            ];
+
+            for (let i = 0; i < 10; i++) {
+                const term = `${pick(verbs)}_${pick(nouns)}`;
+                const signature = sliceHex(frameIndex + i * 3, 6);
+                const ratio = Math.floor(random() * 87 + 12);
+                const lane = String(Math.floor(random() * 24)).padStart(2, '0');
+                if (i % 3 === 0) {
+                    lines.push(`[${pick(tags)}] stream.${term}("${signature}") -> lane:${lane} | flux:${ratio}%`);
+                } else if (i % 3 === 1) {
+                    lines.push(`mesh.${term}(${Math.floor(random() * 512)}, seed_${signature.toLowerCase()}, "${sliceHex(frameIndex + i, 10)}");`);
+                } else {
+                    lines.push(`await vault.${pick(verbs)}("${sliceHex(frameIndex + i * 2, 12)}", entropy:${ratio.toString().padStart(2, '0')});`);
+                }
+            }
+
+            lines.push(`// Identity lock :: ${compactUUID.slice(0, 8)} :: bandwidth ${Math.floor(random() * 41 + 59)} THz`);
+            return lines.join('\n');
+        }
+
+        function normalizeUUIDSnippetCodeForDisplay(sourceCode) {
+            return String(sourceCode || '').replace(/\t/g, '    ');
+        }
+
+        function extractUUIDSnippetPreviewSource(sourceCode) {
+            const lines = normalizeUUIDSnippetCodeForDisplay(sourceCode)
+                .split(/\r?\n/)
+                .slice(0, 22)
+                .map((line) => line.slice(0, 108));
+            return lines.join('\n');
+        }
+
+        function getUUIDSnippetRevealChar(index, progress) {
+            const randomValue = Math.abs(Math.sin((index + 1) * 12.9898 + progress * 78.233)) * 43758.5453;
+            return UUID_SNIPPET_REVEAL_CHARSET[Math.floor(randomValue) % UUID_SNIPPET_REVEAL_CHARSET.length];
+        }
+
+        function buildUUIDSnippetRevealFrame(source, progress) {
+            const safeSource = String(source || '');
+            if (!safeSource) {
+                return '';
+            }
+
+            const revealEdge = Math.floor(safeSource.length * progress);
+            const scrambleZone = Math.max(12, Math.floor((1 - progress) * 96));
+            let result = '';
+
+            for (let i = 0; i < safeSource.length; i++) {
+                const currentChar = safeSource[i];
+                if (currentChar === '\n' || currentChar === '\r') {
+                    result += currentChar;
+                    continue;
+                }
+                if (currentChar === '\t') {
+                    result += '    ';
+                    continue;
+                }
+                if (currentChar === ' ') {
+                    result += ' ';
+                    continue;
+                }
+
+                if (i < revealEdge - scrambleZone) {
+                    result += currentChar;
+                } else if (i <= revealEdge + scrambleZone) {
+                    result += progress > 0.985 ? currentChar : getUUIDSnippetRevealChar(i, progress);
+                } else {
+                    result += getUUIDSnippetRevealChar(i + 17, progress);
+                }
+            }
+
+            return result;
+        }
+
+        function startUUIDSnippetPresentation(uuidValue) {
+            const { textarea, preview } = getUUIDSnippetDisplayElements();
+            clearUUIDSnippetDisplayTimers();
+            uuidSnippetRawCode = '';
+            uuidSnippetDisplayToken += 1;
+            uuidSnippetDisplayProgressTarget = 18;
+            setUUIDSnippetProgress(3);
+            setUUIDSnippetStageState('processing');
+            setUUIDSnippetDisplayStatus(
+                '已激活专属源码解码仓',
+                `正在为 ${String(uuidValue || '').slice(0, 8) || '当前 UUID'} 建立加密通道`,
+                'boot'
+            );
+
+            if (textarea) {
+                textarea.value = '';
+                textarea.scrollTop = 0;
+            }
+            if (preview) {
+                preview.textContent = buildUUIDSnippetLoadingFrame(uuidValue, 0);
+            }
+
+            const currentToken = uuidSnippetDisplayToken;
+            let frameIndex = 1;
+            uuidSnippetDisplayPreviewTimer = setInterval(() => {
+                if (currentToken !== uuidSnippetDisplayToken) {
+                    return;
+                }
+                const { preview: livePreview } = getUUIDSnippetDisplayElements();
+                if (livePreview) {
+                    livePreview.textContent = buildUUIDSnippetLoadingFrame(uuidValue, frameIndex);
+                }
+                frameIndex += 1;
+            }, 120);
+
+            uuidSnippetDisplayProgressTimer = setInterval(() => {
+                if (currentToken !== uuidSnippetDisplayToken) {
+                    return;
+                }
+                const delta = uuidSnippetDisplayProgressTarget - uuidSnippetDisplayProgressValue;
+                if (delta > 0.15) {
+                    setUUIDSnippetProgress(uuidSnippetDisplayProgressValue + Math.max(0.35, delta * 0.08));
+                }
+            }, 56);
+
+            return currentToken;
+        }
+
+        function finishUUIDSnippetPresentation(finalScript, token) {
+            if (token !== uuidSnippetDisplayToken) {
+                return;
+            }
+
+            const { textarea, preview } = getUUIDSnippetDisplayElements();
+            uuidSnippetRawCode = String(finalScript || '');
+            const displayScript = normalizeUUIDSnippetCodeForDisplay(uuidSnippetRawCode);
+            if (textarea) {
+                textarea.value = displayScript;
+                textarea.scrollTop = 0;
+            }
+
+            if (uuidSnippetDisplayProgressTimer) {
+                clearInterval(uuidSnippetDisplayProgressTimer);
+                uuidSnippetDisplayProgressTimer = null;
+            }
+            if (uuidSnippetDisplayPreviewTimer) {
+                clearInterval(uuidSnippetDisplayPreviewTimer);
+                uuidSnippetDisplayPreviewTimer = null;
+            }
+
+            setUUIDSnippetStageState('revealing');
+            setUUIDSnippetDisplayStatus('源码晶格重组完成', '正在解除视觉掩码并写入真实 Snippet.js', 'reveal');
+
+            const previewSource = extractUUIDSnippetPreviewSource(displayScript);
+            const revealStart = performance.now();
+            const revealDuration = 1650;
+
+            const animateReveal = (now) => {
+                if (token !== uuidSnippetDisplayToken) {
+                    return;
+                }
+
+                const progress = Math.min(1, (now - revealStart) / revealDuration);
+                const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+                if (preview) {
+                    preview.textContent = buildUUIDSnippetRevealFrame(previewSource, easedProgress);
+                }
+                setUUIDSnippetProgress(78 + easedProgress * 22);
+
+                if (progress < 1) {
+                    uuidSnippetDisplayRevealFrame = requestAnimationFrame(animateReveal);
+                    return;
+                }
+
+                uuidSnippetDisplayRevealFrame = null;
+                if (preview) {
+                    preview.textContent = previewSource;
+                }
+                setUUIDSnippetStageState('ready');
+                setUUIDSnippetCopyButtonEnabled(true);
+            };
+
+            uuidSnippetDisplayRevealFrame = requestAnimationFrame(animateReveal);
+        }
+
+        function failUUIDSnippetPresentation(message, token) {
+            if (token !== uuidSnippetDisplayToken) {
+                return;
+            }
+
+            const { textarea, preview } = getUUIDSnippetDisplayElements();
+            clearUUIDSnippetDisplayTimers();
+            uuidSnippetRawCode = '';
+            setUUIDSnippetStageState('processing');
+            setUUIDSnippetDisplayStatus('源码生成失败', '远端内容未能完成解码，正在释放错误信息', 'fail');
+            setUUIDSnippetProgress(100);
+
+            if (preview) {
+                preview.textContent = [
+                    '// Snippet.js decode aborted',
+                    `// ${message}`,
+                    '// 请稍后重试，或检查网络与 UUID 是否正常'
+                ].join('\n');
+            }
+
+            if (textarea) {
+                textarea.value = `生成失败：${message}`;
+                textarea.scrollTop = 0;
+            }
+
+            uuidSnippetDisplayReleaseTimer = setTimeout(() => {
+                if (token !== uuidSnippetDisplayToken) {
+                    return;
+                }
+                setUUIDSnippetStageState('error');
+            }, 720);
+        }
+
+        function setUUIDSnippetCopyButtonEnabled(enabled) {
+            const { copyBtn, copyBtnLabel } = getUUIDSnippetDisplayElements();
+            if (copyBtn) {
+                copyBtn.disabled = !enabled;
+                if (enabled) {
+                    copyBtn.dataset.phase = 'ready';
+                    copyBtn.style.setProperty('--uuid-copy-progress', '100%');
+                    copyBtn.title = '复制已生成的专属 Snippet.js';
+                    copyBtn.setAttribute('aria-label', '复制已生成的专属 Snippet.js');
+                }
+            }
+            if (copyBtnLabel && enabled) {
+                copyBtnLabel.textContent = '点击复制代码';
+            }
+        }
+
+        function openUUIDSnippetModal() {
+            const modal = document.getElementById('uuidSnippetModal');
+            const textarea = document.getElementById('uuidSnippetTextarea');
+            if (!modal || !textarea) {
+                return;
+            }
+
+            modal.classList.add('show');
+            if (uuidSnippetLoading) {
+                return;
+            }
+
+            textarea.value = '';
+            setUUIDSnippetCopyButtonEnabled(false);
+            generateUUIDSnippetCode();
+        }
+
+        async function copyUUIDSnippetCode() {
+            const textarea = document.getElementById('uuidSnippetTextarea');
+            const code = uuidSnippetRawCode || (textarea ? textarea.value : '');
+            if (!code) {
+                showToast('暂无可复制代码', 'error');
+                return;
+            }
+
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(code);
+                } else {
+                    const tempTextarea = document.createElement('textarea');
+                    tempTextarea.value = code;
+                    tempTextarea.setAttribute('readonly', '');
+                    tempTextarea.style.position = 'fixed';
+                    tempTextarea.style.opacity = '0';
+                    tempTextarea.style.pointerEvents = 'none';
+                    tempTextarea.style.left = '-9999px';
+                    document.body.appendChild(tempTextarea);
+                    tempTextarea.focus();
+                    tempTextarea.select();
+                    tempTextarea.setSelectionRange(0, tempTextarea.value.length);
+                    const copied = document.execCommand('copy');
+                    tempTextarea.remove();
+                    if (!copied) throw new Error('copy failed');
+                }
+                showToast('Snippet.js 代码已复制', 'success');
+            } catch (error) {
+                showToast('复制失败，请手动复制代码', 'error');
+            }
+        }
+
+        function replaceSnippetCredentials(sourceCode, userID) {
+            const password = sha224(userID);
+            const linePattern = /(const\s+userID\s*=\s*["'])([^"']*)(["']\s*,\s*Password\s*=\s*["'])([^"']*)(["']\s*;)/;
+            if (!linePattern.test(sourceCode)) {
+                throw new Error('未找到EDT.min.js中的userID与Password配置');
+            }
+            return sourceCode.replace(linePattern, `$1${userID}$3${password}$5`);
+        }
+
+        function encodeSnippetCharAsUnicodeEscape(char) {
+            return `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`;
+        }
+
+        function escapeSnippetLiteralForRegExp(literal) {
+            return literal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function randomizeSnippetLiteralCase(literal) {
+            const letterIndexes = [];
+            for (let i = 0; i < literal.length; i++) {
+                if (/[a-z]/i.test(literal[i])) {
+                    letterIndexes.push(i);
+                }
+            }
+
+            if (!letterIndexes.length) {
+                return { value: literal, changedLetters: 0 };
+            }
+
+            const forcedUpperIndex = letterIndexes[Math.floor(Math.random() * letterIndexes.length)];
+            let changedLetters = 0;
+            let value = '';
+
+            for (let i = 0; i < literal.length; i++) {
+                const currentChar = literal[i];
+                if (!/[a-z]/i.test(currentChar)) {
+                    value += currentChar;
+                    continue;
+                }
+
+                const nextChar = (i === forcedUpperIndex || Math.random() < 0.5)
+                    ? currentChar.toUpperCase()
+                    : currentChar.toLowerCase();
+                if (nextChar !== currentChar) {
+                    changedLetters += 1;
+                }
+                value += nextChar;
+            }
+
+            return { value, changedLetters };
+        }
+
+        function randomizeSnippetLiteralUnicodeEscapes(literal) {
+            const forcedIndex = Math.floor(Math.random() * literal.length);
+            let escapedChars = 0;
+            let value = '';
+
+            for (let i = 0; i < literal.length; i++) {
+                const currentChar = literal[i];
+                const shouldEscape = i === forcedIndex || Math.random() < 0.5;
+                if (shouldEscape) {
+                    value += encodeSnippetCharAsUnicodeEscape(currentChar);
+                    escapedChars += 1;
+                } else {
+                    value += currentChar;
+                }
+            }
+
+            return { value, escapedChars };
+        }
+
+        function randomizeSnippetLiteralOccurrences(sourceCode, literal, options = {}) {
+            const pattern = new RegExp(escapeSnippetLiteralForRegExp(literal), 'g');
+            const matches = sourceCode.match(pattern);
+            if (!matches || !matches.length) {
+                return {
+                    code: sourceCode,
+                    occurrences: 0,
+                    escapedChars: 0,
+                    changedLetters: 0
+                };
+            }
+
+            const lastSignature = uuidSnippetLastLiteralVariants.get(literal) || '';
+            let variantSignature = '';
+            let escapedChars = 0;
+            let changedLetters = 0;
+            let randomizedCode = sourceCode;
+
+            for (let attempt = 0; attempt < 8; attempt++) {
+                const signatureParts = [];
+                escapedChars = 0;
+                changedLetters = 0;
+                randomizedCode = sourceCode.replace(pattern, () => {
+                    let variantValue = literal;
+                    if (options.randomizeCase) {
+                        const caseVariant = randomizeSnippetLiteralCase(variantValue);
+                        variantValue = caseVariant.value;
+                        changedLetters += caseVariant.changedLetters;
+                    }
+
+                    const unicodeVariant = randomizeSnippetLiteralUnicodeEscapes(variantValue);
+                    variantValue = unicodeVariant.value;
+                    escapedChars += unicodeVariant.escapedChars;
+                    signatureParts.push(variantValue);
+                    return variantValue;
+                });
+
+                variantSignature = signatureParts.join('||');
+                if (variantSignature !== lastSignature) {
+                    break;
+                }
+            }
+
+            uuidSnippetLastLiteralVariants.set(literal, variantSignature);
+            return {
+                code: randomizedCode,
+                occurrences: matches.length,
+                escapedChars,
+                changedLetters
+            };
+        }
+
+        function buildSnippetDictionaryMap(dictionaryData) {
+            const allRaw = Array.isArray(dictionaryData?.ALL) ? dictionaryData.ALL : [];
+            const edtRaw = Array.isArray(dictionaryData?.EDT) ? dictionaryData.EDT : [];
+
+            const allChars = [...new Set(allRaw.filter(item => typeof item === 'string' && item.length > 0).map(item => item[0]))];
+            const edtChars = [...new Set(edtRaw.filter(item => typeof item === 'string' && item.length > 0).map(item => item[0]))];
+
+            if (!allChars.length || !edtChars.length) {
+                throw new Error('字典内容无效');
+            }
+            if (allChars.length < edtChars.length) {
+                throw new Error('字典ALL数量不足，无法完成不重复随机替换');
+            }
+
+            const randomizedAllChars = shuffleArray(allChars);
+            const dictionaryMap = new Map();
+            edtChars.forEach((char, index) => {
+                dictionaryMap.set(char, randomizedAllChars[index]);
+            });
+            return dictionaryMap;
+        }
+
+        function applySnippetDictionary(sourceCode, dictionaryMap) {
+            let result = '';
+            for (const ch of sourceCode) {
+                result += dictionaryMap.has(ch) ? dictionaryMap.get(ch) : ch;
+            }
+            return result;
+        }
+
+        function randomizeSnippetIndentationTabs(sourceCode) {
+            let totalTabs = 0;
+            let removedTabs = 0;
+            let keptTabs = 0;
+            let affectedLines = 0;
+
+            const code = sourceCode.replace(/^\t+/gm, leadingTabs => {
+                affectedLines += 1;
+                let randomizedIndentation = '';
+
+                for (const tabChar of leadingTabs) {
+                    totalTabs += 1;
+                    if (Math.random() < 0.5) {
+                        removedTabs += 1;
+                    } else {
+                        keptTabs += 1;
+                        randomizedIndentation += tabChar;
+                    }
+                }
+
+                return randomizedIndentation;
+            });
+
+            return {
+                code,
+                totalTabs,
+                removedTabs,
+                keptTabs,
+                affectedLines
+            };
+        }
+
+        async function generateUUIDSnippetCode() {
+            if (uuidSnippetLoading) {
+                return;
+            }
+
+            const textarea = document.getElementById('uuidSnippetTextarea');
+            const nodeUUIDInput = document.getElementById('nodeUUID');
+            if (!textarea || !nodeUUIDInput) {
+                return;
+            }
+
+            const uuidValue = (nodeUUIDInput.value || '').trim();
+            if (!uuidValue) {
+                uuidSnippetRawCode = '';
+                textarea.value = '';
+                setUUIDSnippetCopyButtonEnabled(false);
+                clearUUIDSnippetDisplayTimers();
+                setUUIDSnippetStageState('');
+                setUUIDSnippetProgress(0);
+                setUUIDSnippetDisplayStatus('等待源码重组完成', '请先填写 UUID 再生成专属源码', 'boot');
+                showToast('UUID为空，无法生成专属代码', 'error');
+                return;
+            }
+
+            const animationToken = startUUIDSnippetPresentation(uuidValue);
+            try {
+                uuidSnippetLoading = true;
+                updateUUIDSnippetProcessingStage(28, 'sync', '正在拉取原始 Snippet 内核', '远端源码流与字典矩阵已接入');
+                const [rawScriptText, rawDictionaryText] = await Promise.all([
+                    fetchWithAutoMirror(UUID_SNIPPETS_JS_URL, 'Snippets EDT.min.js'),
+                    fetchWithAutoMirror(UUID_SNIPPETS_DICT_URL, 'Snippets 字典')
+                ]);
+
+                updateUUIDSnippetProcessingStage(51, 'sync', '远端内容捕获完成', `源码 ${rawScriptText.length} 字符，字典 ${rawDictionaryText.length} 字符`);
+                const replacedScript = replaceSnippetCredentials(rawScriptText, uuidValue);
+                updateUUIDSnippetProcessingStage(69, 'bind', '专属 UUID 指纹已注入', `用户标识 ${uuidValue.slice(0, 8)} 已锁定到内核`);
+                const dictionaryData = JSON.parse(rawDictionaryText);
+                const dictionaryMap = buildSnippetDictionaryMap(dictionaryData);
+                updateUUIDSnippetProcessingStage(86, 'mesh', '字符晶格正在重映射', `字典矩阵已生成 ${dictionaryMap.size} 组替换通道`);
+                const dictionaryAppliedScript = applySnippetDictionary(replacedScript, dictionaryMap);
+                const socketsVariantResult = randomizeSnippetLiteralOccurrences(dictionaryAppliedScript, 'cloudflare:sockets');
+                const proxyipVariantResult = randomizeSnippetLiteralOccurrences(
+                    socketsVariantResult.code,
+                    'proxyip.cmliussss.net',
+                    { randomizeCase: true }
+                );
+                const finalScript = proxyipVariantResult.code;
+                const variantSummaries = [];
+
+                if (socketsVariantResult.occurrences > 0) {
+                    variantSummaries.push(
+                        `cloudflare:sockets ${socketsVariantResult.occurrences} 处 / ${socketsVariantResult.escapedChars} 个 Unicode 转义`
+                    );
+                }
+                if (proxyipVariantResult.occurrences > 0) {
+                    variantSummaries.push(
+                        `proxyip.cmliussss.net ${proxyipVariantResult.occurrences} 处 / ${proxyipVariantResult.changedLetters} 个大小写扰动 / ${proxyipVariantResult.escapedChars} 个 Unicode 转义`
+                    );
+                }
+
+                if (variantSummaries.length > 0) {
+                    updateUUIDSnippetProcessingStage(94, 'mesh', '目标标识已完成随机扰动', variantSummaries.join(' ; '));
+                } else {
+                    updateUUIDSnippetProcessingStage(94, 'mesh', '未发现目标标识', '跳过字符串扰动步骤，直接进入最终揭晓');
+                }
+
+                const indentationRandomizedResult = randomizeSnippetIndentationTabs(finalScript);
+                if (indentationRandomizedResult.totalTabs > 0) {
+                    updateUUIDSnippetProcessingStage(
+                        97,
+                        'mesh',
+                        '源码缩进已完成随机排版',
+                        `影响 ${indentationRandomizedResult.affectedLines} 行 / 保留 ${indentationRandomizedResult.keptTabs} 个 tab / 删除 ${indentationRandomizedResult.removedTabs} 个 tab`
+                    );
+                } else {
+                    updateUUIDSnippetProcessingStage(97, 'mesh', '未发现可扰动缩进', '源码中没有行首 tab，跳过随机排版步骤');
+                }
+
+                finishUUIDSnippetPresentation(indentationRandomizedResult.code, animationToken);
+                showToast('Snippets.js专属代码已生成', 'success');
+            } catch (error) {
+                setUUIDSnippetCopyButtonEnabled(false);
+                failUUIDSnippetPresentation(error.message || String(error), animationToken);
+                showToast('生成失败: ' + (error.message || error), 'error');
+            } finally {
+                uuidSnippetLoading = false;
+            }
+        }
+
+        async function copyNodeUUIDValue(nodeUUIDInput) {
+            const uuidValue = (nodeUUIDInput.value || '').trim();
+            if (!uuidValue) {
+                showToast('UUID为空，无法复制', 'error');
+                return;
+            }
+
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(uuidValue);
+                    showToast('已复制UUID的值', 'success');
+                    return;
+                }
+
+                const tempTextarea = document.createElement('textarea');
+                tempTextarea.value = uuidValue;
+                tempTextarea.setAttribute('readonly', '');
+                tempTextarea.style.position = 'fixed';
+                tempTextarea.style.opacity = '0';
+                tempTextarea.style.pointerEvents = 'none';
+                tempTextarea.style.left = '-9999px';
+                document.body.appendChild(tempTextarea);
+                tempTextarea.focus();
+                tempTextarea.select();
+                tempTextarea.setSelectionRange(0, tempTextarea.value.length);
+
+                const copied = document.execCommand('copy');
+                tempTextarea.remove();
+
+                if (copied) {
+                    showToast('已复制UUID的值', 'success');
+                } else {
+                    showToast('复制失败，请手动复制UUID', 'error');
+                }
+            } catch (error) {
+                showToast('复制失败，请手动复制UUID', 'error');
+            }
+        }
+
+        function initNodeUUIDEasterEgg() {
+            const nodeUUIDInput = document.getElementById('nodeUUID');
+            if (!nodeUUIDInput) {
+                return;
+            }
+
+            nodeUUIDInput.addEventListener('click', (event) => {
+                const now = Date.now();
+
+                if (now - uuidEasterLastClickAt > UUID_EASTER_MAX_INTERVAL) {
+                    uuidEasterClickCount = 0;
+                }
+
+                uuidEasterLastClickAt = now;
+                uuidEasterClickCount += 1;
+
+                if (uuidEasterResetTimer) {
+                    clearTimeout(uuidEasterResetTimer);
+                }
+                uuidEasterResetTimer = setTimeout(() => {
+                    resetNodeUUIDEasterCount();
+                }, UUID_EASTER_RESET_DELAY);
+
+                if (uuidEasterClickCount === 1) {
+                    copyNodeUUIDValue(nodeUUIDInput);
+                }
+
+                if (uuidEasterClickCount >= UUID_EASTER_HINT_START) {
+                    showNodeUUIDClickFx(uuidEasterClickCount, event.clientX, event.clientY, nodeUUIDInput);
+                }
+
+                if (uuidEasterClickCount >= UUID_EASTER_TARGET_COUNT) {
+                    openUUIDSnippetModal();
+                    resetNodeUUIDEasterCount();
+                }
+            });
+        }
         // 日志类型翻译
         function translateLogType(type, ua = '') {
             // 如果是 Get_SUB 类型，检查 UA 是否包含 subconverter
@@ -10698,6 +12332,59 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             const statusEl = document.getElementById('telegramStatus');
             const confirmBtn = document.getElementById('telegramConfirmBtn');
             const testBtn = event.target;
+            const telegramApiBases = [
+                'https://api.telegram.org',
+                'https://api.tg.090227.xyz'
+            ];
+
+            async function requestTelegram(endpoint, params = null, preferredBase = null) {
+                const requestOrder = preferredBase
+                    ? [preferredBase, ...telegramApiBases.filter(base => base !== preferredBase)]
+                    : telegramApiBases;
+                const errors = [];
+
+                for (let i = 0; i < requestOrder.length; i++) {
+                    const base = requestOrder[i];
+                    const queryString = params ? `?${params.toString()}` : '';
+                    const requestUrl = `${base}/bot${token}/${endpoint}${queryString}`;
+
+                    try {
+                        const response = await fetch(requestUrl);
+                        let data = null;
+
+                        try {
+                            data = await response.json();
+                        } catch (jsonError) {
+                            if (response.ok) {
+                                throw new Error('接口返回了无效的JSON数据');
+                            }
+                        }
+
+                        if (!response.ok) {
+                            // 401/400 等业务错误通常会携带 JSON，属于“接口可达”，不走备用接口。
+                            if (data && typeof data === 'object' && data.ok === false) {
+                                return { data, base };
+                            }
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+
+                        if (!data || typeof data !== 'object') {
+                            throw new Error('接口返回数据格式异常');
+                        }
+
+                        return { data, base };
+                    } catch (error) {
+                        const host = new URL(base).hostname;
+                        errors.push(`${host}: ${error.message}`);
+
+                        if (i < requestOrder.length - 1) {
+                            console.warn(`[TelegramBot] ${host} 请求失败，切换备用接口`, error);
+                        }
+                    }
+                }
+
+                throw new Error(`官方API与备用API均请求失败（${errors.join('；')}）`);
+            }
 
             if (!token || !chatID) {
                 statusEl.textContent = '❌ 请填写Bot Token和Chat ID';
@@ -10717,17 +12404,8 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 statusEl.style.color = '#fff';
 
                 // 第一步：验证 Bot Token 的有效性
-                const getUrlParams = new URLSearchParams({
-                    access_token: token
-                });
-                const getMeUrl = `https://api.telegram.org/bot${token}/getMe`;
-
-                const getMeResponse = await fetch(getMeUrl);
-                if (!getMeResponse.ok) {
-                    throw new Error('Bot Token 无效，无法获取机器人信息');
-                }
-
-                const getMeData = await getMeResponse.json();
+                const getMeResult = await requestTelegram('getMe');
+                const getMeData = getMeResult.data;
                 if (!getMeData.ok) {
                     throw new Error('Bot Token 无效: ' + (getMeData.description || '未知错误'));
                 }
@@ -10737,17 +12415,13 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                     chat_id: chatID,
                     text: '✅ Telegram 通知配置已验证成功！'
                 });
-                const sendUrl = `https://api.telegram.org/bot${token}/sendMessage?${sendUrlParams}`;
-
-                const sendResponse = await fetch(sendUrl);
-                if (!sendResponse.ok) {
-                    throw new Error('发送消息失败，请检查Chat ID是否正确');
-                }
-
-                const sendData = await sendResponse.json();
+                const sendResult = await requestTelegram('sendMessage', sendUrlParams, getMeResult.base);
+                const sendData = sendResult.data;
                 if (!sendData.ok) {
                     throw new Error('Chat ID 无效: ' + (sendData.description || '未知错误'));
                 }
+
+                console.log(`[TelegramBot] 验证成功，当前接口: ${sendResult.base}`);
 
                 // 验证成功
                 statusEl.style.background = 'linear-gradient(135deg, #10b981 0, #059669 100%)';
@@ -11866,51 +13540,68 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             }
         }
 
-        // 智能镜像拉取函数 - 自动替换域名进行重试
+        // 智能镜像拉取函数 - 原始地址与镜像并发抢占，谁先成功就用谁
         async function fetchWithAutoMirror(originalUrl, description = '资源') {
-            // 备用域名列表（按优先级）
+            const rawGithubPrefix = 'https://raw.githubusercontent.com';
             const mirrorDomains = [
+                'https://github.090227.xyz/raw.githubusercontent.com',
+                'https://github.cmliussss.com/raw.githubusercontent.com',
                 'https://github.cmliussss.net/raw.githubusercontent.com',
-                'https://github.cmliussss.com/raw.githubusercontent.com'
             ];
+            const candidates = [{ url: originalUrl, label: '原始链接' }];
 
-            // 第一次尝试：使用原始URL
-            try {
-                console.log(`[请求RAW] 进度: 尝试原始链接 URL=${originalUrl}`);
-                const response = await fetch(originalUrl);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                const text = await response.text();
-                console.log(`[请求RAW] 成功: 从原始链接拉取 ${description}，长度=${text.length} 字符`);
-                return text;
-            } catch (error) {
-                console.warn(`[请求RAW] ❌ 原始链接拉取失败: ${error.message}`);
+            if (originalUrl.startsWith(rawGithubPrefix)) {
+                mirrorDomains.forEach((mirrorDomain, index) => {
+                    candidates.push({
+                        url: originalUrl.replace(rawGithubPrefix, mirrorDomain),
+                        label: `备用镜像 ${index + 1}`
+                    });
+                });
             }
 
-            // 后续尝试：使用备用镜像域名
-            for (let i = 0; i < mirrorDomains.length; i++) {
-                try {
-                    // 将原URL中的 https://raw.githubusercontent.com 替换为备用域名
-                    const mirrorUrl = originalUrl.replace(
-                        'https://raw.githubusercontent.com',
-                        mirrorDomains[i]
-                    );
+            console.log(`[请求RAW] 进度: 并发拉取 ${description}，候选源数量=${candidates.length}`);
 
-                    console.log(`[请求RAW] 进度: 尝试备用镜像 (${i + 1}/${mirrorDomains.length}) URL=${mirrorUrl}`);
-                    const response = await fetch(mirrorUrl);
+            const controllers = candidates.map(() => new AbortController());
+            let hasWinner = false;
+
+            const requests = candidates.map((candidate, index) => (async () => {
+                try {
+                    console.log(`[请求RAW] 进度: 发起${candidate.label}请求 URL=${candidate.url}`);
+                    const response = await fetch(candidate.url, {
+                        signal: controllers[index].signal
+                    });
+
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                     const text = await response.text();
-                    console.log(`[请求RAW] 成功: 从备用镜像拉取 ${description}，长度=${text.length} 字符`);
-                    return text;
+                    return { ...candidate, index, text };
                 } catch (error) {
-                    console.warn(`[请求RAW] ❌ 备用镜像 ${i + 1} 拉取失败: ${error.message}`);
-
-                    // 如果是最后一个镜像，抛出错误
-                    if (i === mirrorDomains.length - 1) {
-                        throw new Error(`${description}拉取失败，已尝试原始链接和全部${mirrorDomains.length}个备用镜像`);
+                    if (!(hasWinner && error.name === 'AbortError')) {
+                        console.warn(`[请求RAW] ❌ ${candidate.label}拉取失败: ${error.message}`);
                     }
+                    throw error;
                 }
+            })());
+
+            try {
+                const winner = await Promise.any(requests);
+                hasWinner = true;
+
+                controllers.forEach((controller, index) => {
+                    if (index !== winner.index) {
+                        controller.abort();
+                    }
+                });
+
+                console.log(`[请求RAW] 成功: 从${winner.label}拉取 ${description}，长度=${winner.text.length} 字符`);
+                return winner.text;
+            } catch (error) {
+                const mirrorCount = Math.max(candidates.length - 1, 0);
+                throw new Error(
+                    mirrorCount > 0
+                        ? `${description}拉取失败，已尝试原始链接和全部${mirrorCount}个备用镜像`
+                        : `${description}拉取失败，原始链接不可用`
+                );
             }
         }
 
@@ -12452,6 +14143,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             loadConfig();
             initUserMode();
             initLineEditor('customIPs');
+            initNodeUUIDEasterEgg();
             // 独立预加载 SubConfig 数据，不阻塞主流程
             loadSubConfigData().catch(err => console.error('SubConfig预加载失败:', err));
         });
