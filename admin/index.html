@@ -8026,6 +8026,13 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 
         // 标记延迟测试是否已经开始，防止重复执行
         let latencyTestStarted = false;
+        let latencyTestActive = false;
+        let latencyTestSessionId = 0;
+        let latencySiteLatencies = {};
+        let latencySiteIntervals = {};
+        let latencySiteUpdateInProgress = {};
+        const latencyFetchControllers = new Set();
+        const latencyFetchTimeoutMs = 8000;
 
         // 延迟测试数据
         const latencySites = [
@@ -8151,18 +8158,54 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         // 测试延迟
         async function testLatency(site) {
             const start = Date.now();
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), latencyFetchTimeoutMs);
+            latencyFetchControllers.add(controller);
+
             try {
-                const response = await fetch(site.url + '?t=' + Date.now(), {
+                await fetch(site.url + '?t=' + Date.now(), {
                     method: 'HEAD',
                     cache: 'no-cache',
                     mode: 'no-cors',
-                    referrerPolicy: 'no-referrer'
+                    referrerPolicy: 'no-referrer',
+                    signal: controller.signal
                 });
                 const latency = Date.now() - start;
                 return latency;
             } catch (error) {
                 return -1; // 连接失败
+            } finally {
+                clearTimeout(timeoutId);
+                latencyFetchControllers.delete(controller);
             }
+        }
+
+        function initLatencyDataStorage() {
+            if (Object.keys(latencySiteLatencies).length > 0) return;
+
+            latencySites.forEach(site => {
+                const siteName = site.name.toLowerCase().replace(/\s+/g, '-');
+                latencySiteLatencies[siteName] = [];
+            });
+        }
+
+        function stopLatencyTest() {
+            latencyTestActive = false;
+            latencyTestSessionId += 1;
+
+            Object.values(latencySiteIntervals).forEach(timer => clearInterval(timer));
+            latencySiteIntervals = {};
+            latencySiteUpdateInProgress = {};
+
+            latencyFetchControllers.forEach(controller => controller.abort());
+            latencyFetchControllers.clear();
+
+            Object.values(latencyUIState).forEach(state => {
+                if (state && state.timer) {
+                    clearInterval(state.timer);
+                    state.timer = null;
+                }
+            });
         }
 
         // 获取延迟颜色
@@ -8294,46 +8337,72 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 
         // 开始延迟测试
         async function startLatencyTest() {
-            if (latencyTestStarted) return;
-            latencyTestStarted = true;
+            if (latencyTestActive) return;
 
-            generateLatencyCards();
+            latencyTestActive = true;
+            const currentSessionId = ++latencyTestSessionId;
 
-            // 为每个网站维护最新的N个延迟数据
-            const siteLatencies = {};
+            Object.values(latencySiteIntervals).forEach(timer => clearInterval(timer));
+            latencySiteIntervals = {};
+            latencySiteUpdateInProgress = {};
+
+            if (!latencyTestStarted) {
+                generateLatencyCards();
+                latencyTestStarted = true;
+            }
+
+            initLatencyDataStorage();
+
             latencySites.forEach(site => {
-                const siteName = site.name.toLowerCase().replace(/\s+/g, '-');
-                siteLatencies[siteName] = [];
+                startSingleSiteLatencyLoop(site, currentSessionId);
             });
+        }
 
-            // 初始采样测试
-            const initialPromises = latencySites.map(async (site) => {
-                const siteName = site.name.toLowerCase().replace(/\s+/g, '-');
-                for (let i = 0; i < latencyTestConfig.count; i++) {
-                    const latency = await testLatency(site);
-                    siteLatencies[siteName].push(latency);
-                    updateLatencyDisplay(siteName, siteLatencies[siteName]);
-                    if (i < latencyTestConfig.count - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 0));
-                    }
+        async function startSingleSiteLatencyLoop(site, sessionId) {
+            const siteName = site.name.toLowerCase().replace(/\s+/g, '-');
+
+            while (
+                latencyTestActive &&
+                sessionId === latencyTestSessionId &&
+                latencySiteLatencies[siteName].length < latencyTestConfig.count
+            ) {
+                const latency = await testLatency(site);
+                if (!latencyTestActive || sessionId !== latencyTestSessionId) return;
+
+                latencySiteLatencies[siteName].push(latency);
+                updateLatencyDisplay(siteName, latencySiteLatencies[siteName]);
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+
+            if (!latencyTestActive || sessionId !== latencyTestSessionId) return;
+
+            if (latencySiteIntervals[siteName]) {
+                clearInterval(latencySiteIntervals[siteName]);
+                delete latencySiteIntervals[siteName];
+            }
+
+            latencySiteIntervals[siteName] = setInterval(async () => {
+                if (
+                    !latencyTestActive ||
+                    sessionId !== latencyTestSessionId ||
+                    latencySiteUpdateInProgress[siteName]
+                ) {
+                    return;
                 }
-            });
 
-            await Promise.all(initialPromises);
-
-            // 之后每 3.09 秒测试一次，更新最新的数据 (保持 ECG 曲线流动)
-            setInterval(async () => {
-                const updatePromises = latencySites.map(async (site) => {
-                    const siteName = site.name.toLowerCase().replace(/\s+/g, '-');
+                latencySiteUpdateInProgress[siteName] = true;
+                try {
                     const latency = await testLatency(site);
-                    // 添加新数据，保持只有N个
-                    siteLatencies[siteName].push(latency);
-                    if (siteLatencies[siteName].length > latencyTestConfig.count) {
-                        siteLatencies[siteName].shift(); // 移除最旧的
+                    if (!latencyTestActive || sessionId !== latencyTestSessionId) return;
+
+                    latencySiteLatencies[siteName].push(latency);
+                    if (latencySiteLatencies[siteName].length > latencyTestConfig.count) {
+                        latencySiteLatencies[siteName].shift();
                     }
-                    updateLatencyDisplay(siteName, siteLatencies[siteName]);
-                });
-                await Promise.all(updatePromises);
+                    updateLatencyDisplay(siteName, latencySiteLatencies[siteName]);
+                } finally {
+                    latencySiteUpdateInProgress[siteName] = false;
+                }
             }, 618 * 3);
         }
 
@@ -9477,6 +9546,8 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 startLatencyTest();
             } else {
                 // Collapse - hide latency tests
+                stopLatencyTest();
+
                 const height = content.scrollHeight;
                 // Ensure starting height is set
                 content.style.maxHeight = height + 'px';
