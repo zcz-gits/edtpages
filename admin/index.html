@@ -574,6 +574,7 @@
             cursor: pointer;
         }
 
+        .uuid-gift-fx,
         .uuid-click-fx {
             position: fixed;
             left: 0;
@@ -581,29 +582,193 @@
             transform: translate(-50%, -50%);
             pointer-events: none;
             z-index: 9000000001;
-            color: #ef4444;
-            font-size: 16px;
-            font-weight: 700;
-            text-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+            font-size: 22px;
+            line-height: 1;
             opacity: 0;
-            white-space: nowrap;
-            animation: uuidClickCountPop 0.75s ease-out forwards;
+            filter: drop-shadow(0 8px 14px rgba(244, 63, 94, 0.35));
+            animation: uuidGiftFountain var(--gift-duration, 0.92s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
-        @keyframes uuidClickCountPop {
+        .uuid-gift-fx::before,
+        .uuid-click-fx::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 74%;
+            width: 6px;
+            height: 26px;
+            border-radius: 999px;
+            transform: translate(-50%, 0);
+            background: linear-gradient(180deg, rgba(251, 191, 36, 0.95), rgba(251, 191, 36, 0));
+            opacity: 0.85;
+            animation: uuidGiftTrail var(--gift-duration, 0.92s) ease-out forwards;
+        }
+
+        @keyframes uuidGiftFountain {
             0% {
                 opacity: 0;
-                transform: translate(-50%, -20%) scale(0.7);
+                transform: translate(-50%, -18%) scale(0.62) rotate(-16deg);
             }
 
             15% {
                 opacity: 1;
-                transform: translate(-50%, -40%) scale(1);
+                transform: translate(-50%, -30%) scale(1.05) rotate(2deg);
             }
 
             100% {
                 opacity: 0;
-                transform: translate(-50%, -130%) scale(1.1);
+                transform:
+                    translate(
+                        calc(-50% + var(--gift-x-drift, 0px)),
+                        calc(-50% - var(--gift-y-lift, 150px))
+                    )
+                    scale(1.02)
+                    rotate(var(--gift-rotate, 0deg));
+            }
+        }
+
+        @keyframes uuidGiftTrail {
+            0% {
+                opacity: 0.8;
+                transform: translate(-50%, 0) scaleY(0.8);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, 18px) scaleY(1.35);
+            }
+        }
+
+        .uuid-rocket-fx {
+            position: fixed;
+            left: 0;
+            top: 0;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9000000002;
+            font-size: 24px;
+            line-height: 1;
+            opacity: 0;
+            filter: drop-shadow(0 8px 12px rgba(59, 130, 246, 0.45));
+            animation: uuidRocketLaunch 0.62s cubic-bezier(0.18, 0.9, 0.32, 1) forwards;
+        }
+
+        @keyframes uuidRocketLaunch {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -10%) scale(0.66) rotate(-14deg);
+            }
+
+            18% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 1;
+                transform:
+                    translate(
+                        calc(-50% + var(--rocket-x-drift, 0px)),
+                        calc(-50% - 220px)
+                    )
+                    scale(1.06)
+                    rotate(9deg);
+            }
+        }
+
+        .uuid-firework-burst {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+            z-index: 9000000003;
+        }
+
+        .uuid-firework-particle {
+            position: absolute;
+            left: 0;
+            top: 0;
+            display: block;
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            transform: translate(-50%, -50%);
+            background: hsl(var(--hue, 28), 96%, 62%);
+            box-shadow: 0 0 8px hsla(var(--hue, 28), 96%, 62%, 0.95);
+            animation: uuidFireworkParticle var(--particle-duration, 1000ms) cubic-bezier(0.16, 0.84, 0.3, 1) forwards;
+        }
+
+        @keyframes uuidFireworkParticle {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.22);
+            }
+
+            22% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.08);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) scale(0.25);
+            }
+        }
+
+        .uuid-firework-ring {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            border: 2px solid rgba(255, 255, 255, 0.95);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9000000002;
+            animation: uuidFireworkRing 0.82s ease-out forwards;
+        }
+
+        @keyframes uuidFireworkRing {
+            0% {
+                width: 14px;
+                height: 14px;
+                opacity: 0.9;
+                border-width: 2px;
+            }
+
+            100% {
+                width: 190px;
+                height: 190px;
+                opacity: 0;
+                border-width: 1px;
+            }
+        }
+
+        .uuid-firework-flash {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9000000002;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.95), rgba(250, 204, 21, 0.65), rgba(250, 204, 21, 0));
+            animation: uuidFireworkFlash 0.56s ease-out forwards;
+        }
+
+        @keyframes uuidFireworkFlash {
+            0% {
+                opacity: 0.92;
+                transform: translate(-50%, -50%) scale(0.35);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(6.5);
             }
         }
 
@@ -704,11 +869,11 @@
             width: 100%;
             min-height: 380px;
             max-height: 62vh;
-            padding: 22px 20px 20px;
+            padding: 28px 20px 20px;
             border: 0;
             border-radius: var(--uuid-snippet-surface-radius);
             font-size: 11px;
-            line-height: 1.7;
+            line-height: 1.5;
             background: linear-gradient(180deg, rgba(7, 13, 30, 0.94), rgba(2, 6, 23, 0.96)) !important;
             color: #d8f3ff !important;
             font-family: 'SFMono-Regular', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
@@ -724,6 +889,16 @@
             -webkit-user-select: none;
             user-select: none;
             box-shadow: inset 0 0 0 1px rgba(103, 232, 249, 0.04);
+        }
+
+        .uuid-snippet-stage.is-ready #uuidSnippetTextarea {
+            opacity: 1;
+            filter: none;
+            transform: none;
+            pointer-events: auto;
+            -webkit-user-select: text;
+            user-select: text;
+            animation: uuidSnippetTextareaReveal 0.68s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
         .uuid-snippet-stage.is-ready,
@@ -761,11 +936,16 @@
 
         .uuid-snippet-stage.is-processing #uuidSnippetDisplay,
         .uuid-snippet-stage.is-revealing #uuidSnippetDisplay,
-        .uuid-snippet-stage.is-ready #uuidSnippetDisplay,
         .uuid-snippet-stage.is-error #uuidSnippetDisplay {
             opacity: 1;
             visibility: visible;
             transform: none;
+        }
+
+        .uuid-snippet-stage.is-ready #uuidSnippetDisplay {
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(1.01);
         }
 
         .uuid-snippet-stage.is-ready #uuidSnippetDisplay,
@@ -7277,7 +7457,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             <div class="uuid-snippet-buttons">
                 <button type="button" class="btn btn-uuid-copy" id="uuidSnippetCopyBtn" onclick="copyUUIDSnippetCode()"
                     data-phase="boot" disabled><span class="uuid-copy-btn-label"
-                        id="uuidSnippetCopyBtnLabel">等待源码重组完成</span></button>
+                        id="uuidSnippetCopyBtnLabel">等待源码混淆重组</span></button>
                 <button type="button" class="btn btn-uuid-close" onclick="closeUUIDSnippetModal()">关闭</button>
             </div>
         </div>
@@ -8011,6 +8191,13 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 
         // 标记延迟测试是否已经开始，防止重复执行
         let latencyTestStarted = false;
+        let latencyTestActive = false;
+        let latencyTestSessionId = 0;
+        let latencySiteLatencies = {};
+        let latencySiteIntervals = {};
+        let latencySiteUpdateInProgress = {};
+        const latencyFetchControllers = new Set();
+        const latencyFetchTimeoutMs = 8000;
 
         // 延迟测试数据
         const latencySites = [
@@ -8136,18 +8323,54 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         // 测试延迟
         async function testLatency(site) {
             const start = Date.now();
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), latencyFetchTimeoutMs);
+            latencyFetchControllers.add(controller);
+
             try {
-                const response = await fetch(site.url + '?t=' + Date.now(), {
+                await fetch(site.url + '?t=' + Date.now(), {
                     method: 'HEAD',
                     cache: 'no-cache',
                     mode: 'no-cors',
-                    referrerPolicy: 'no-referrer'
+                    referrerPolicy: 'no-referrer',
+                    signal: controller.signal
                 });
                 const latency = Date.now() - start;
                 return latency;
             } catch (error) {
                 return -1; // 连接失败
+            } finally {
+                clearTimeout(timeoutId);
+                latencyFetchControllers.delete(controller);
             }
+        }
+
+        function initLatencyDataStorage() {
+            if (Object.keys(latencySiteLatencies).length > 0) return;
+
+            latencySites.forEach(site => {
+                const siteName = site.name.toLowerCase().replace(/\s+/g, '-');
+                latencySiteLatencies[siteName] = [];
+            });
+        }
+
+        function stopLatencyTest() {
+            latencyTestActive = false;
+            latencyTestSessionId += 1;
+
+            Object.values(latencySiteIntervals).forEach(timer => clearInterval(timer));
+            latencySiteIntervals = {};
+            latencySiteUpdateInProgress = {};
+
+            latencyFetchControllers.forEach(controller => controller.abort());
+            latencyFetchControllers.clear();
+
+            Object.values(latencyUIState).forEach(state => {
+                if (state && state.timer) {
+                    clearInterval(state.timer);
+                    state.timer = null;
+                }
+            });
         }
 
         // 获取延迟颜色
@@ -8279,46 +8502,72 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 
         // 开始延迟测试
         async function startLatencyTest() {
-            if (latencyTestStarted) return;
-            latencyTestStarted = true;
+            if (latencyTestActive) return;
 
-            generateLatencyCards();
+            latencyTestActive = true;
+            const currentSessionId = ++latencyTestSessionId;
 
-            // 为每个网站维护最新的N个延迟数据
-            const siteLatencies = {};
+            Object.values(latencySiteIntervals).forEach(timer => clearInterval(timer));
+            latencySiteIntervals = {};
+            latencySiteUpdateInProgress = {};
+
+            if (!latencyTestStarted) {
+                generateLatencyCards();
+                latencyTestStarted = true;
+            }
+
+            initLatencyDataStorage();
+
             latencySites.forEach(site => {
-                const siteName = site.name.toLowerCase().replace(/\s+/g, '-');
-                siteLatencies[siteName] = [];
+                startSingleSiteLatencyLoop(site, currentSessionId);
             });
+        }
 
-            // 初始采样测试
-            const initialPromises = latencySites.map(async (site) => {
-                const siteName = site.name.toLowerCase().replace(/\s+/g, '-');
-                for (let i = 0; i < latencyTestConfig.count; i++) {
-                    const latency = await testLatency(site);
-                    siteLatencies[siteName].push(latency);
-                    updateLatencyDisplay(siteName, siteLatencies[siteName]);
-                    if (i < latencyTestConfig.count - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 0));
-                    }
+        async function startSingleSiteLatencyLoop(site, sessionId) {
+            const siteName = site.name.toLowerCase().replace(/\s+/g, '-');
+
+            while (
+                latencyTestActive &&
+                sessionId === latencyTestSessionId &&
+                latencySiteLatencies[siteName].length < latencyTestConfig.count
+            ) {
+                const latency = await testLatency(site);
+                if (!latencyTestActive || sessionId !== latencyTestSessionId) return;
+
+                latencySiteLatencies[siteName].push(latency);
+                updateLatencyDisplay(siteName, latencySiteLatencies[siteName]);
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+
+            if (!latencyTestActive || sessionId !== latencyTestSessionId) return;
+
+            if (latencySiteIntervals[siteName]) {
+                clearInterval(latencySiteIntervals[siteName]);
+                delete latencySiteIntervals[siteName];
+            }
+
+            latencySiteIntervals[siteName] = setInterval(async () => {
+                if (
+                    !latencyTestActive ||
+                    sessionId !== latencyTestSessionId ||
+                    latencySiteUpdateInProgress[siteName]
+                ) {
+                    return;
                 }
-            });
 
-            await Promise.all(initialPromises);
-
-            // 之后每 3.09 秒测试一次，更新最新的数据 (保持 ECG 曲线流动)
-            setInterval(async () => {
-                const updatePromises = latencySites.map(async (site) => {
-                    const siteName = site.name.toLowerCase().replace(/\s+/g, '-');
+                latencySiteUpdateInProgress[siteName] = true;
+                try {
                     const latency = await testLatency(site);
-                    // 添加新数据，保持只有N个
-                    siteLatencies[siteName].push(latency);
-                    if (siteLatencies[siteName].length > latencyTestConfig.count) {
-                        siteLatencies[siteName].shift(); // 移除最旧的
+                    if (!latencyTestActive || sessionId !== latencyTestSessionId) return;
+
+                    latencySiteLatencies[siteName].push(latency);
+                    if (latencySiteLatencies[siteName].length > latencyTestConfig.count) {
+                        latencySiteLatencies[siteName].shift();
                     }
-                    updateLatencyDisplay(siteName, siteLatencies[siteName]);
-                });
-                await Promise.all(updatePromises);
+                    updateLatencyDisplay(siteName, latencySiteLatencies[siteName]);
+                } finally {
+                    latencySiteUpdateInProgress[siteName] = false;
+                }
             }, 618 * 3);
         }
 
@@ -9462,6 +9711,8 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 startLatencyTest();
             } else {
                 // Collapse - hide latency tests
+                stopLatencyTest();
+
                 const height = content.scrollHeight;
                 // Ensure starting height is set
                 content.style.maxHeight = height + 'px';
@@ -9575,7 +9826,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         function copySubscription(elementId) {
             const element = document.getElementById(elementId);
             navigator.clipboard.writeText(element.value).then(() => {
-                showToast('已复制到剪贴板', 'success');
+                showToast('📋 已复制到剪贴板', 'success');
             }).catch(() => {
                 showToast('复制失败', 'error');
             });
@@ -10298,17 +10549,28 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         }
 
         // UUID easter egg
-        const UUID_EASTER_TARGET_COUNT = 10;
-        const UUID_EASTER_HINT_START = 5;
+        const UUID_EASTER_CLICK_TARGET_COUNT = 10;
+        const UUID_EASTER_LONG_PRESS_TARGET_COUNT = 16;
+        const UUID_EASTER_HINT_START = 4;
         const UUID_EASTER_MAX_INTERVAL = 1000;
         const UUID_EASTER_RESET_DELAY = 1400;
+        const UUID_EASTER_LONG_PRESS_DELAY = 360;
+        const UUID_EASTER_LONG_PRESS_INTERVAL = 120;
         const UUID_EASTER_FX_VERTICAL_OFFSET = 12;
+        const UUID_EASTER_GIFT_ICONS = ['🎁', '🎀', '🧧', '🎉'];
+        const UUID_EASTER_FIREWORK_PARTICLE_COUNT = 26;
         const UUID_SNIPPETS_JS_URL = 'https://raw.githubusercontent.com/EDT-Pages/EDT.min.js/Snippets/EDT.min.js';
         const UUID_SNIPPETS_DICT_URL = 'https://raw.githubusercontent.com/EDT-Pages/EDT.min.js/Snippets/字典.json';
 
         let uuidEasterClickCount = 0;
         let uuidEasterLastClickAt = 0;
         let uuidEasterResetTimer = null;
+        let uuidEasterLongPressDelayTimer = null;
+        let uuidEasterLongPressIntervalTimer = null;
+        let uuidEasterActivePointerId = null;
+        let uuidEasterPointerX = NaN;
+        let uuidEasterPointerY = NaN;
+        let uuidEasterLongPressMode = false;
         let uuidSnippetLoading = false;
         let uuidSnippetDisplayProgressTimer = null;
         let uuidSnippetDisplayPreviewTimer = null;
@@ -10339,21 +10601,105 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             }
         }
 
-        function showNodeUUIDClickFx(clickCount, clientX, clientY, fallbackEl) {
+        function stopNodeUUIDLongPress() {
+            if (uuidEasterLongPressDelayTimer) {
+                clearTimeout(uuidEasterLongPressDelayTimer);
+                uuidEasterLongPressDelayTimer = null;
+            }
+            if (uuidEasterLongPressIntervalTimer) {
+                clearInterval(uuidEasterLongPressIntervalTimer);
+                uuidEasterLongPressIntervalTimer = null;
+            }
+            uuidEasterActivePointerId = null;
+            uuidEasterLongPressMode = false;
+        }
+
+        function getNodeUUIDFxOrigin(clientX, clientY, fallbackEl) {
             const rect = fallbackEl.getBoundingClientRect();
             const baseX = Number.isFinite(clientX) ? clientX : rect.left + rect.width / 2;
             const baseY = Number.isFinite(clientY) ? clientY : rect.top + rect.height / 2;
-            const x = baseX + (Math.random() * 14 - 7);
-            const y = baseY - UUID_EASTER_FX_VERTICAL_OFFSET + (Math.random() * 8 - 4);
+            return {
+                x: baseX,
+                y: baseY - UUID_EASTER_FX_VERTICAL_OFFSET
+            };
+        }
 
+        function showNodeUUIDGiftFountain(clientX, clientY, fallbackEl) {
+            const origin = getNodeUUIDFxOrigin(clientX, clientY, fallbackEl);
             const fx = document.createElement('div');
-            fx.className = 'uuid-click-fx';
-            fx.textContent = 'x' + clickCount;
-            fx.style.left = x + 'px';
-            fx.style.top = y + 'px';
+            fx.className = 'uuid-gift-fx';
+            fx.textContent = UUID_EASTER_GIFT_ICONS[Math.floor(Math.random() * UUID_EASTER_GIFT_ICONS.length)];
+            fx.style.left = (origin.x + (Math.random() * 20 - 10)) + 'px';
+            fx.style.top = (origin.y + (Math.random() * 10 - 5)) + 'px';
+            fx.style.setProperty('--gift-x-drift', `${(Math.random() * 90 - 45).toFixed(1)}px`);
+            fx.style.setProperty('--gift-y-lift', `${(140 + Math.random() * 40).toFixed(1)}px`);
+            fx.style.setProperty('--gift-rotate', `${(Math.random() * 70 - 35).toFixed(1)}deg`);
+            fx.style.setProperty('--gift-duration', `${(640 + Math.random() * 240).toFixed(0)}ms`);
             document.body.appendChild(fx);
 
-            setTimeout(() => fx.remove(), 850);
+            setTimeout(() => fx.remove(), 1300);
+        }
+
+        function showNodeUUIDRocketFirework(clientX, clientY, fallbackEl) {
+            const origin = getNodeUUIDFxOrigin(clientX, clientY, fallbackEl);
+            const launchX = origin.x + (Math.random() * 26 - 13);
+            const launchY = origin.y + 12;
+
+            const rocket = document.createElement('div');
+            rocket.className = 'uuid-rocket-fx';
+            rocket.textContent = '🚀';
+            rocket.style.left = `${launchX}px`;
+            rocket.style.top = `${launchY}px`;
+            rocket.style.setProperty('--rocket-x-drift', `${(Math.random() * 34 - 17).toFixed(1)}px`);
+            document.body.appendChild(rocket);
+
+            setTimeout(() => {
+                const burstX = launchX + (Math.random() * 16 - 8);
+                const burstY = launchY - (188 + Math.random() * 34);
+
+                const flash = document.createElement('div');
+                flash.className = 'uuid-firework-flash';
+                flash.style.left = `${burstX}px`;
+                flash.style.top = `${burstY}px`;
+
+                const ring = document.createElement('div');
+                ring.className = 'uuid-firework-ring';
+                ring.style.left = `${burstX}px`;
+                ring.style.top = `${burstY}px`;
+
+                const burst = document.createElement('div');
+                burst.className = 'uuid-firework-burst';
+                burst.style.left = `${burstX}px`;
+                burst.style.top = `${burstY}px`;
+
+                for (let i = 0; i < UUID_EASTER_FIREWORK_PARTICLE_COUNT; i++) {
+                    const angle = (Math.PI * 2 * i / UUID_EASTER_FIREWORK_PARTICLE_COUNT) + (Math.random() * 0.14 - 0.07);
+                    const distance = 78 + Math.random() * 86;
+                    const dx = Math.cos(angle) * distance;
+                    const dy = Math.sin(angle) * distance;
+
+                    const particle = document.createElement('span');
+                    particle.className = 'uuid-firework-particle';
+                    particle.style.setProperty('--dx', `${dx.toFixed(1)}px`);
+                    particle.style.setProperty('--dy', `${dy.toFixed(1)}px`);
+                    particle.style.setProperty('--hue', `${Math.floor(Math.random() * 360)}`);
+                    particle.style.setProperty('--particle-duration', `${(780 + Math.random() * 420).toFixed(0)}ms`);
+                    burst.appendChild(particle);
+                }
+
+                document.body.appendChild(flash);
+                document.body.appendChild(ring);
+                document.body.appendChild(burst);
+                rocket.remove();
+
+                setTimeout(() => {
+                    flash.remove();
+                    ring.remove();
+                    burst.remove();
+                }, 1400);
+            }, 560);
+
+            setTimeout(() => rocket.remove(), 1700);
         }
 
         function sha224(s) {
@@ -10462,7 +10808,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 copyBtn.setAttribute('aria-label', meta ? `${label}：${meta}` : (label || ''));
             }
             if (copyBtnLabel && copyBtn?.disabled) {
-                copyBtnLabel.textContent = badgeKey === 'fail' ? '源码重组失败' : '等待源码重组完成';
+                copyBtnLabel.textContent = badgeKey === 'fail' ? '源码重组失败' : '🔐 等待源码混淆重组';
             }
         }
 
@@ -10538,8 +10884,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         function extractUUIDSnippetPreviewSource(sourceCode) {
             const lines = normalizeUUIDSnippetCodeForDisplay(sourceCode)
                 .split(/\r?\n/)
-                .slice(0, 22)
-                .map((line) => line.slice(0, 108));
+                .slice(0, 22);
             return lines.join('\n');
         }
 
@@ -10736,7 +11081,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 }
             }
             if (copyBtnLabel && enabled) {
-                copyBtnLabel.textContent = '点击复制代码';
+                copyBtnLabel.textContent = '📋 点击复制代码';
             }
         }
 
@@ -10784,7 +11129,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                     tempTextarea.remove();
                     if (!copied) throw new Error('copy failed');
                 }
-                showToast('Snippet.js 代码已复制', 'success');
+                showToast('📋 Snippet.js 代码已复制', 'success');
             } catch (error) {
                 showToast('复制失败，请手动复制代码', 'error');
             }
@@ -11074,7 +11419,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             try {
                 if (navigator.clipboard && window.isSecureContext) {
                     await navigator.clipboard.writeText(uuidValue);
-                    showToast('已复制UUID的值', 'success');
+                    showToast('📋 已复制UUID的值', 'success');
                     return;
                 }
 
@@ -11094,7 +11439,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 tempTextarea.remove();
 
                 if (copied) {
-                    showToast('已复制UUID的值', 'success');
+                    showToast('📋 已复制UUID的值', 'success');
                 } else {
                     showToast('复制失败，请手动复制UUID', 'error');
                 }
@@ -11109,7 +11454,11 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 return;
             }
 
-            nodeUUIDInput.addEventListener('click', (event) => {
+            const triggerUUIDEaster = (clientX, clientY) => {
+                const targetCount = uuidEasterLongPressMode
+                    ? UUID_EASTER_LONG_PRESS_TARGET_COUNT
+                    : UUID_EASTER_CLICK_TARGET_COUNT;
+
                 const now = Date.now();
 
                 if (now - uuidEasterLastClickAt > UUID_EASTER_MAX_INTERVAL) {
@@ -11130,13 +11479,89 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                     copyNodeUUIDValue(nodeUUIDInput);
                 }
 
-                if (uuidEasterClickCount >= UUID_EASTER_HINT_START) {
-                    showNodeUUIDClickFx(uuidEasterClickCount, event.clientX, event.clientY, nodeUUIDInput);
+                if (uuidEasterClickCount >= UUID_EASTER_HINT_START && uuidEasterClickCount < targetCount) {
+                    showNodeUUIDGiftFountain(clientX, clientY, nodeUUIDInput);
                 }
 
-                if (uuidEasterClickCount >= UUID_EASTER_TARGET_COUNT) {
+                if (uuidEasterClickCount >= targetCount) {
+                    showNodeUUIDRocketFirework(clientX, clientY, nodeUUIDInput);
                     openUUIDSnippetModal();
                     resetNodeUUIDEasterCount();
+                    stopNodeUUIDLongPress();
+                    return true;
+                }
+                return false;
+            };
+
+            nodeUUIDInput.addEventListener('pointerdown', (event) => {
+                if (event.pointerType === 'mouse' && event.button !== 0) {
+                    return;
+                }
+                if (uuidEasterActivePointerId !== null && uuidEasterActivePointerId !== event.pointerId) {
+                    return;
+                }
+
+                if (event.pointerType !== 'mouse') {
+                    event.preventDefault();
+                }
+
+                stopNodeUUIDLongPress();
+                uuidEasterActivePointerId = event.pointerId;
+                uuidEasterPointerX = event.clientX;
+                uuidEasterPointerY = event.clientY;
+                if (nodeUUIDInput.setPointerCapture) {
+                    try {
+                        nodeUUIDInput.setPointerCapture(event.pointerId);
+                    } catch (_) {
+                        // ignore capture errors on unsupported platforms
+                    }
+                }
+
+                const reachedTarget = triggerUUIDEaster(uuidEasterPointerX, uuidEasterPointerY);
+                if (reachedTarget) {
+                    return;
+                }
+
+                uuidEasterLongPressDelayTimer = setTimeout(() => {
+                    uuidEasterLongPressMode = true;
+                    uuidEasterLongPressIntervalTimer = setInterval(() => {
+                        triggerUUIDEaster(uuidEasterPointerX, uuidEasterPointerY);
+                    }, UUID_EASTER_LONG_PRESS_INTERVAL);
+                }, UUID_EASTER_LONG_PRESS_DELAY);
+            });
+
+            nodeUUIDInput.addEventListener('pointermove', (event) => {
+                if (uuidEasterActivePointerId !== event.pointerId) {
+                    return;
+                }
+                uuidEasterPointerX = event.clientX;
+                uuidEasterPointerY = event.clientY;
+            });
+
+            const onPointerFinish = (event) => {
+                if (uuidEasterActivePointerId !== null && uuidEasterActivePointerId !== event.pointerId) {
+                    return;
+                }
+                if (nodeUUIDInput.releasePointerCapture && event.pointerId !== undefined) {
+                    try {
+                        if (nodeUUIDInput.hasPointerCapture && nodeUUIDInput.hasPointerCapture(event.pointerId)) {
+                            nodeUUIDInput.releasePointerCapture(event.pointerId);
+                        }
+                    } catch (_) {
+                        // ignore release errors
+                    }
+                }
+                stopNodeUUIDLongPress();
+            };
+
+            nodeUUIDInput.addEventListener('pointerup', onPointerFinish);
+            nodeUUIDInput.addEventListener('pointercancel', onPointerFinish);
+            nodeUUIDInput.addEventListener('lostpointercapture', onPointerFinish);
+            nodeUUIDInput.addEventListener('blur', () => stopNodeUUIDLongPress());
+
+            nodeUUIDInput.addEventListener('contextmenu', (event) => {
+                if (uuidEasterActivePointerId !== null) {
+                    event.preventDefault();
                 }
             });
         }
