@@ -15225,7 +15225,88 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             }
         }
 
-        // 获取国内测试数据 (并发 HEAD byte-test，读取 X-Request-Ip 后查询 ipinfo)
+        // JSONP 请求工具（用于无 CORS 的接口）
+        function createJsonpRequest(url, callbackParam, timeoutMs = 8000) {
+            let settled = false;
+            let timeoutId = null;
+            let script = null;
+            let callbackScope = null;
+            let callbackKey = null;
+            let rejectPromise = null;
+
+            const cleanup = () => {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                if (script && script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+                if (callbackScope && callbackKey) {
+                    try {
+                        delete callbackScope[callbackKey];
+                    } catch {
+                        callbackScope[callbackKey] = undefined;
+                    }
+                }
+            };
+
+            const promise = new Promise((resolve, reject) => {
+                rejectPromise = reject;
+
+                const finalize = (handler, value) => {
+                    if (settled) return;
+                    settled = true;
+                    cleanup();
+                    handler(value);
+                };
+
+                const callbackPath = `window.__EDT2_IP_TEST_.__${Date.now()}_${Math.floor(Math.random() * 1e16)}__`;
+                const callbackChain = callbackPath.replace(/^window\./, '').split('.');
+
+                callbackScope = window;
+                for (let i = 0; i < callbackChain.length - 1; i++) {
+                    const key = callbackChain[i];
+                    if (!callbackScope[key] || typeof callbackScope[key] !== 'object') {
+                        callbackScope[key] = {};
+                    }
+                    callbackScope = callbackScope[key];
+                }
+                callbackKey = callbackChain[callbackChain.length - 1];
+                callbackScope[callbackKey] = payload => finalize(resolve, payload);
+
+                const requestUrl = new URL(url);
+                requestUrl.searchParams.set(callbackParam, callbackPath);
+                requestUrl.searchParams.set('_t', Date.now().toString());
+
+                script = document.createElement('script');
+                script.src = requestUrl.toString();
+                script.async = true;
+                script.referrerPolicy = 'no-referrer';
+                script.onerror = () => finalize(reject, new Error(`JSONP load failed: ${url}`));
+
+                timeoutId = setTimeout(() => {
+                    finalize(reject, new Error(`JSONP timeout: ${url}`));
+                }, timeoutMs);
+
+                document.head.appendChild(script);
+            });
+
+            return {
+                promise,
+                cancel: () => {
+                    if (!settled && rejectPromise) {
+                        settled = true;
+                        cleanup();
+                        rejectPromise(new Error(`JSONP cancelled: ${url}`));
+                    } else {
+                        cleanup();
+                    }
+                }
+            };
+        }
+
+        // 获取国内测试数据 (多源并发：HEAD + JSONP，提取IP后查询ipinfo)
         async function fetchIpipData() {
             setStatus('status-ipip', 'loading');
 
@@ -15233,38 +15314,73 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             const titleElement = statusElement ? statusElement.parentElement : null;
             const testSources = [
                 {
+                    type: 'head',
                     name: '字节跳动',
-                    url: 'https://perfops2.byte-test.com/',
+                    url: 'https://perfops2.byte-test.com/500b-bench.jpg',
                     ipHeader: 'X-Request-Ip'
                 },
                 {
+                    type: 'head',
                     name: '字节跳动',
-                    url: 'https://perfops.byte-test.com/',
+                    url: 'https://perfops.byte-test.com',
                     ipHeader: 'X-Request-Ip'
                 },
                 {
-                    name: '网易',
-                    url: 'https://static.ws.126.net/favicon.ico',
+                    type: 'head',
+                    name: '网易科技',
+                    url: 'https://necaptcha.nosdn.127.net/ab7f4275c1744aa28e0a8f3a1c58c532.png',
                     ipHeader: 'cdn-user-ip'
+                },
+                {
+                    type: 'jsonp',
+                    name: '腾讯新闻',
+                    url: 'https://r.inews.qq.com/api/ip2city?otype=jsonp',
+                    callbackParam: 'callback',
+                    extractIp: payload => payload?.ip
+                },
+                {
+                    type: 'jsonp',
+                    name: '阿里巴巴',
+                    url: `https://${Date.now()}.dns-detect.alicdn.com/api/detect/DescribeDNSLookup`,
+                    callbackParam: 'cb',
+                    extractIp: payload => payload?.content?.localIp
                 }
             ];
-            const controllers = testSources.map(() => new AbortController());
+            const requestTasks = testSources.map(sourceConfig => {
+                if (sourceConfig.type === 'jsonp') {
+                    const jsonpTask = createJsonpRequest(sourceConfig.url, sourceConfig.callbackParam);
+                    return {
+                        cancel: jsonpTask.cancel,
+                        promise: jsonpTask.promise.then(payload => {
+                            const requestIp = String(sourceConfig.extractIp(payload) || '').trim();
+                            if (!requestIp) {
+                                throw new Error(`${sourceConfig.url} missing jsonp ip`);
+                            }
+                            return {
+                                source: sourceConfig.url,
+                                requestIp,
+                                providerName: sourceConfig.name
+                            };
+                        })
+                    };
+                }
 
-            try {
-                const fastestSuccess = await Promise.any(
-                    testSources.map((sourceConfig, index) => (async () => {
+                const controller = new AbortController();
+                return {
+                    cancel: () => controller.abort(),
+                    promise: (async () => {
                         const url = `${sourceConfig.url}${sourceConfig.url.includes('?') ? '&' : '?'}_t=${Date.now()}`;
                         const response = await fetch(url, {
                             method: 'HEAD',
                             cache: 'no-store',
-                            signal: controllers[index].signal
+                            signal: controller.signal
                         });
 
                         if (!response.ok) {
                             throw new Error(`${sourceConfig.url} HTTP ${response.status}`);
                         }
 
-                        const requestIp = (response.headers.get(sourceConfig.ipHeader) || '').trim();
+                        const requestIp = String(response.headers.get(sourceConfig.ipHeader) || '').trim();
                         if (!requestIp) {
                             throw new Error(`${sourceConfig.url} missing ${sourceConfig.ipHeader}`);
                         }
@@ -15274,10 +15390,13 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                             requestIp,
                             providerName: sourceConfig.name
                         };
-                    })())
-                );
+                    })()
+                };
+            });
 
-                controllers.forEach(controller => controller.abort());
+            try {
+                const fastestSuccess = await Promise.any(requestTasks.map(task => task.promise));
+                requestTasks.forEach(task => task.cancel && task.cancel());
 
                 const infoResponse = await fetch(
                     `https://api.cmliussss.net/api/ipinfo?ip=${encodeURIComponent(fastestSuccess.requestIp)}&_t=${Date.now()}`
@@ -15301,11 +15420,14 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 
                 console.log(`[国内测试] 成功: IP=${ip}, 位置=${location}, 来源=${fastestSuccess.source}`);
             } catch (error) {
-                controllers.forEach(controller => controller.abort());
+                requestTasks.forEach(task => task.cancel && task.cancel());
 
                 document.getElementById('ipip-ip').innerHTML = '<span class="error">加载失败</span>';
                 document.getElementById('ipip-country').textContent = '';
-                document.getElementById('ipip-city').textContent = '';
+                const ipipCityElement = document.getElementById('ipip-city');
+                if (ipipCityElement) {
+                    ipipCityElement.textContent = '';
+                }
                 setStatus('status-ipip', 'error');
                 console.error('国内测试 所有测试源都失败:', error);
             }
