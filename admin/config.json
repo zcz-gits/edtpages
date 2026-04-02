@@ -24,7 +24,7 @@
   },
   "SS": {
     "加密方式": "aes-128-gcm",
-    "TLS": false
+    "TLS": true
   },
   "Fingerprint": "chrome",
   "优选订阅生成": {

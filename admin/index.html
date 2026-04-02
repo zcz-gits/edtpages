@@ -5409,6 +5409,15 @@
             z-index: 2100000001;
         }
 
+        #ssTLSDisableModal {
+            z-index: 2100000000;
+        }
+
+        #ssTLSDisableModal .modal {
+            max-width: 540px;
+            z-index: 2100000001;
+        }
+
         .grpc-modal-path {
             margin: 0 0 16px 0;
             padding: 12px;
@@ -5459,6 +5468,76 @@
         html.dark-mode .grpc-modal-confirm-btn {
             background: linear-gradient(135deg, #34d399 0%, #059669 100%);
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+        }
+
+        .sstls-modal-alert {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: left;
+            color: #f44336;
+        }
+
+        .sstls-modal-requirements {
+            margin: 0 0 16px 0;
+            padding: 12px;
+            border-radius: 8px;
+            background: #fff5f5;
+            border: 1px solid #ffcdd2;
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #b71c1c;
+        }
+
+        .sstls-modal-requirements ol {
+            margin: 8px 0 0 20px;
+            padding: 0;
+        }
+
+        .sstls-modal-requirements li {
+            margin-bottom: 8px;
+        }
+
+        .sstls-modal-requirements li:last-child {
+            margin-bottom: 0;
+        }
+
+        .sstls-modal-path {
+            margin: 8px 0 0 0;
+        }
+
+        .sstls-modal-confirm-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);
+        }
+
+        .sstls-modal-confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(234, 88, 12, 0.45);
+            background: linear-gradient(135deg, #f59e0b 0%, #c2410c 100%);
+        }
+
+        .sstls-modal-confirm-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3);
+        }
+
+        html.dark-mode .sstls-modal-alert {
+            color: #ff8a80;
+        }
+
+        html.dark-mode .sstls-modal-requirements {
+            background: #4a2424;
+            border-color: #7f1d1d;
+            color: #ffb4ae;
+        }
+
+        html.dark-mode .sstls-modal-confirm-btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #ea580c 100%);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
         }
 
         .tooltip-header {
@@ -6665,9 +6744,9 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 
                     <div class="form-group" id="ssTLSGroup" style="display: none;" title="关闭TLS后，节点数据将以 HTTP明文 形式传输 aes-128/256-gcm 加密数据。所以即使关闭TLS，数据仍然是加密的。">
                         <label for="ssTLS">TLS</label>
-                        <select id="ssTLS" onchange="updateProtocol(); markModified('config')">
+                        <select id="ssTLS" onchange="handleSSTLSChange(event)">
                             <option value="true">启用</option>
-                            <option value="false">关闭（注意：Pages部署的节点在关闭TLS后无法使用）</option>
+                            <option value="false">关闭</option>
                         </select>
                     </div>
 
@@ -8255,6 +8334,36 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         </div>
     </div>
 
+    <!-- ssTLS 关闭确认弹窗 -->
+    <div class="modal-overlay" id="ssTLSDisableModal" onclick="closeSSTLSDisableModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button type="button" class="modal-close" onclick="cancelDisableSSTLS()">×</button>
+            <div style="text-align: center; padding: 20px 0;">
+                <h2 style="color: #f44336; margin: 0 0 16px 0; font-size: 22px; font-weight: 700;">⚠️ 关闭TLS传输层</h2>
+                <p style="margin: 0 0 12px 0; font-size: 14px; line-height: 1.6; text-align: left;">
+                    你正在准备关闭 <strong>Shadowsocks</strong> 的 TLS 传输层。为了避免节点失联，请先确认部署环境满足要求。
+                </p>
+                <div class="sstls-modal-requirements">
+                    <strong>关闭 TLS 前，请确认以下两点：</strong>
+                    <ol>
+                        <li>项目必须部署在 <strong>Workers</strong>（不是 Pages）。</li>
+                        <li>
+                            在 Cloudflare 中关闭 “<strong>始终使用 HTTPS</strong>”
+                            <div class="grpc-modal-path sstls-modal-path">
+                                <span>SSL/TLS &gt; 边缘证书 &gt; 始终使用 HTTPS &gt; <strong>关闭</strong></span>
+                            </div>
+                            或 <strong>HOST</strong> 直接使用 <strong>*.workers.dev</strong> 项目分配的域名。
+                        </li>
+                    </ol>
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button type="button" class="btn sstls-modal-confirm-btn" onclick="confirmDisableSSTLS()">我准备好了</button>
+                <button type="button" class="btn btn-secondary" onclick="cancelDisableSSTLS()">取消</button>
+            </div>
+        </div>
+    </div>
+
     <!-- HOSTS 检查提示弹窗 -->
     <div class="modal-overlay" id="hostsMismatchModal" onclick="closeHostsMismatchModal(event)">
         <div class="modal" onclick="event.stopPropagation()" style="max-width: 500px;">
@@ -8293,6 +8402,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         let subConfigData = null;
         let hasMultipleHosts = false; // 标记是否存在多个 HOSTS
         let isLowPerformanceMode = false;
+        let pendingSSTLSPreviousValue = null;
         const LOW_PERF_STORAGE_KEY = 'adminLowPerformanceMode';
         let performanceRecheckScheduled = false;
 
@@ -9446,6 +9556,68 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             hideTransportGrpcTooltip();
         }
 
+        function showSSTLSDisableModal(previousValue) {
+            const modal = document.getElementById('ssTLSDisableModal');
+            if (!modal) return;
+            pendingSSTLSPreviousValue = previousValue;
+            modal.classList.add('show');
+        }
+
+        function hideSSTLSDisableModal() {
+            const modal = document.getElementById('ssTLSDisableModal');
+            if (!modal) return;
+            modal.classList.remove('show');
+        }
+
+        function closeSSTLSDisableModal(event) {
+            if (event && event.target && event.target.id !== 'ssTLSDisableModal') {
+                return;
+            }
+            cancelDisableSSTLS();
+        }
+
+        function confirmDisableSSTLS() {
+            const ssTLSSelect = document.getElementById('ssTLS');
+            if (!ssTLSSelect) return;
+
+            ssTLSSelect.value = 'false';
+            ssTLSSelect.dataset.confirmedValue = 'false';
+            pendingSSTLSPreviousValue = null;
+            hideSSTLSDisableModal();
+            updateProtocol();
+            markModified('config');
+        }
+
+        function cancelDisableSSTLS() {
+            const ssTLSSelect = document.getElementById('ssTLS');
+            if (ssTLSSelect) {
+                const restoredValue = pendingSSTLSPreviousValue || ssTLSSelect.dataset.confirmedValue || 'true';
+                ssTLSSelect.value = restoredValue;
+                ssTLSSelect.dataset.confirmedValue = restoredValue;
+            }
+            pendingSSTLSPreviousValue = null;
+            hideSSTLSDisableModal();
+            updateProtocol();
+        }
+
+        function handleSSTLSChange(event) {
+            const ssTLSSelect = document.getElementById('ssTLS');
+            if (!ssTLSSelect) return;
+
+            const nextValue = ssTLSSelect.value;
+            const previousValue = ssTLSSelect.dataset.confirmedValue || 'true';
+            const shouldConfirmDisable = nextValue === 'false' && previousValue !== 'false' && (!event || event.isTrusted);
+
+            if (shouldConfirmDisable) {
+                showSSTLSDisableModal(previousValue);
+                return;
+            }
+
+            ssTLSSelect.dataset.confirmedValue = nextValue;
+            updateProtocol();
+            markModified('config');
+        }
+
         function updateTransportGrpcTooltipVisibility(showWhenSupportedTransport = false) {
             const transportSelect = document.getElementById('transport');
             if (!transportSelect) return;
@@ -9539,6 +9711,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 }
 
                 ssTLSSelect.value = currentConfig.SS.TLS ? 'true' : 'false';
+                ssTLSSelect.dataset.confirmedValue = ssTLSSelect.value;
                 return;
             }
 
@@ -9551,6 +9724,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 
             ssMethodSelect.value = 'aes-128-gcm';
             ssTLSSelect.value = 'false';
+            ssTLSSelect.dataset.confirmedValue = ssTLSSelect.value;
         }
 
         function updateSpecifiedPortLabelsByProtocol(protocol) {
