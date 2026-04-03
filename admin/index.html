@@ -6604,7 +6604,7 @@
                                 <div class="location-text">
                                     <span id="twitter-country" class="country-text">-</span>
                                 </div>
-                                <div class="network-tip">· 您访问墙外站点所使用的IP</div>
+                                <div id="twitter-tip" class="network-tip">· 您访问墙外站点所使用的IP</div>
                             </div>
                         </div>
                     </div>
@@ -15839,10 +15839,16 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             setStatus('status-twitter', 'loading');
             const statusElement = document.querySelector('#status-twitter');
             const titleElement = statusElement ? statusElement.parentElement : null;
+            const tipElement = document.getElementById('twitter-tip');
 
             const renderTwitterTitle = (subtitle) => {
                 if (!titleElement) return;
                 titleElement.innerHTML = `<span class="status-indicator" id="status-twitter"></span><div class="title-text"><div class="title-main">墙外测试</div><div class="title-subtitle">${subtitle}</div></div>`;
+            };
+
+            const renderTwitterTip = (sourceName) => {
+                if (!tipElement) return;
+                tipElement.textContent = `· 您访问 ${sourceName} 所使用的IP`;
             };
 
             const testSources = [
@@ -15910,6 +15916,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 applyNetworkCardFlag('twitter-country');
                 setStatus('status-twitter', 'success');
                 renderTwitterTitle(fastestSuccess.providerName);
+                renderTwitterTip(fastestSuccess.providerName);
                 setStatus('status-twitter', 'success');
 
                 console.log(`[墙外测试] 成功: IP=${twIp}, 位置=${twLoc}, 来源=${fastestSuccess.providerName}`);
@@ -15919,6 +15926,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 applyNetworkCardFlag('twitter-country');
                 setStatus('status-twitter', 'error');
                 renderTwitterTitle('Google → X.com');
+                renderTwitterTip('墙外站点');
                 setStatus('status-twitter', 'error');
                 console.error('墙外测试接口错误:', error);
             }
