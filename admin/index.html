@@ -15652,6 +15652,13 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 },
                 {
                     type: 'jsonp',
+                    name: '太平洋科技',
+                    url: 'https://whois.pconline.com.cn/ipJson.jsp',
+                    callbackParam: 'callback',
+                    extractIp: payload => payload?.ip
+                },
+                {
+                    type: 'jsonp',
                     name: '阿里巴巴',
                     url: `https://${Date.now()}.dns-detect.alicdn.com/api/detect/DescribeDNSLookup`,
                     callbackParam: 'cb',
