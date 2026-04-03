@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 
 <head>
@@ -5647,6 +5647,10 @@
             margin-top: 16px;
         }
 
+        .network-cards-container .network-card {
+            cursor: pointer;
+        }
+
         @media (max-width: 1200px) {
             .network-cards-container {
                 grid-template-columns: repeat(2, 1fr);
@@ -5674,6 +5678,39 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+        }
+
+        .network-card {
+            --flag-badge-url: none;
+        }
+
+        .network-card.has-flag-badge::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            right: -3px;
+            width: 90px;
+            height: 60px;
+            background-image: var(--flag-badge-url);
+            background-repeat: no-repeat;
+            background-position: left center;
+            background-size: cover;
+            filter: blur(3.18px) saturate(1.08);
+            opacity: 0.2;
+            transform: rotate(10deg);
+            border-radius: 12px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .network-card .network-card-title,
+        .network-card .network-info-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        html.dark-mode .network-card.has-flag-badge::after {
+            opacity: 0.30;
         }
 
         html.dark-mode .network-card,
@@ -5778,6 +5815,58 @@
             font-family: 'Fira Code', monospace;
             font-size: 15px;
             word-break: break-all;
+            align-self: flex-start;
+            width: fit-content;
+            max-width: 100%;
+        }
+
+        .ip-text.clickable {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ip-text.clickable::after {
+            content: '';
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+            background-repeat: no-repeat;
+            background-size: 13px 13px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232196F3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+            opacity: 0.9;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            transform: translateY(0.5px);
+        }
+
+        .ip-text.clickable:hover::after {
+            opacity: 1;
+            transform: translateY(0.5px) scale(1.08);
+        }
+
+        .ip-text.clickable.is-loading::after {
+            background-image: none;
+            border: 2px solid rgba(33, 150, 243, 0.25);
+            border-top-color: #2196F3;
+            border-radius: 50%;
+            opacity: 1;
+            transform: translateY(0.5px);
+            animation: ipIconSpin 0.9s linear infinite;
+        }
+
+        html.dark-mode .ip-text.clickable.is-loading::after {
+            border-color: rgba(144, 202, 249, 0.25);
+            border-top-color: #90CAF9;
+        }
+
+        @keyframes ipIconSpin {
+            from {
+                transform: translateY(0.5px) rotate(0deg);
+            }
+
+            to {
+                transform: translateY(0.5px) rotate(360deg);
+            }
         }
 
         .location-text {
@@ -6456,7 +6545,7 @@
                                 <span class="status-indicator" id="status-ipip"></span>
                                 <div class="title-text">
                                     <div class="title-main">国内测试</div>
-                                    <div class="title-subtitle">speedtest.cn</div>
+                                    <div class="title-subtitle">CN-Test</div>
                                 </div>
                             </div>
                             <div class="network-info-content">
@@ -12577,20 +12666,20 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         }
 
         async function fetchAndShowIpDetail(ip, targetElement = null) {
-            // 将 * 替换为 0 (兼容掩码IP)
-            const cleanIp = ip.toString().replace(/\*/g, '0');
+            let cleanIp = String(ip || '').trim();
+            if (cleanIp.includes('*') && targetElement && targetElement.dataset && targetElement.dataset.rawValue) {
+                cleanIp = String(targetElement.dataset.rawValue || '').trim();
+            }
+            if (!cleanIp || cleanIp === '未知') {
+                return;
+            }
 
             if (targetElement) {
-                // 移除可能存在的加载动画
-                const existingSpinner = targetElement.querySelector('.loading-spinner');
-                if (existingSpinner) {
+                if (targetElement.classList.contains('is-loading')) {
                     return; // 正在加载中,不重复请求
                 }
-
-                // 添加加载动画
-                const spinner = document.createElement('span');
-                spinner.className = 'loading-spinner';
-                targetElement.appendChild(spinner);
+                targetElement.classList.add('is-loading');
+                targetElement.setAttribute('aria-busy', 'true');
             }
 
             try {
@@ -12617,8 +12706,8 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 console.error('IP查询错误:', error);
             } finally {
                 if (targetElement) {
-                    const spinner = targetElement.querySelector('.loading-spinner');
-                    if (spinner) spinner.remove();
+                    targetElement.classList.remove('is-loading');
+                    targetElement.removeAttribute('aria-busy');
                 }
             }
         }
@@ -15225,100 +15314,442 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             }
         }
 
-        // 获取国内测试数据 (遍历多个 API: speedtest.cn > ipipv.com > ipip.net)
-        async function fetchIpipData() {
-            setStatus('status-ipip', 'loading');
+        // 网络信息默认脱敏显示（点击卡片可显示真实值）
+        let networkPrivacyVisible = false;
+        const NETWORK_FIELD_CONFIGS = [
+            { id: 'ipip-ip', type: 'ip' },
+            { id: 'overseas-ip', type: 'ip' },
+            { id: 'cf-ip', type: 'ip' },
+            { id: 'twitter-ip', type: 'ip' },
+            { id: 'ipip-country', type: 'location' },
+            { id: 'overseas-country', type: 'location' },
+            { id: 'cf-country', type: 'location' },
+            { id: 'twitter-country', type: 'location' }
+        ];
 
-            // 获取标题元素,用于动态更新 API 来源
-            const titleElement = document.querySelector('#status-ipip').parentElement;
+        function maskNetworkIpValue(ip) {
+            const value = String(ip || '').trim();
+            if (!value || value === '未知') return value;
 
-            // 定义 API 配置列表,按优先级排序
-            const apiConfigs = [
-                {
-                    name: 'speedtest.cn',
-                    url: 'https://api-v3.speedtest.cn/ip',
-                    parser: (data) => {
-                        if (data.code === 0 && data.data) {
-                            return {
-                                ip: data.data.ip || '未知',
-                                country: data.data.country || '未知',
-                                city: data.data.city || '未知'
-                            };
-                        }
-                        throw new Error('数据格式错误');
-                    }
-                },
-                {
-                    name: 'ipipv.com',
-                    url: 'https://myip.ipipv.com/',
-                    parser: (data) => {
-                        return {
-                            ip: data.Ip || '未知',
-                            country: data.Country || '未知',
-                            city: data.City || '未知'
-                        };
-                    }
-                },
-                {
-                    name: 'ipip.net',
-                    url: 'https://myip.ipip.net/json',
-                    parser: (data) => {
-                        if (data.ret === 'ok' && data.data) {
-                            return {
-                                ip: data.data.ip || '未知',
-                                country: data.data.location[0] || '未知',
-                                city: data.data.location[2] || '未知'
-                            };
-                        }
-                        throw new Error('数据格式错误');
-                    }
-                }
-            ];
-
-            // 遍历 API 配置列表
-            for (const config of apiConfigs) {
-                try {
-                    // 添加时间戳参数避免缓存
-                    const timestamp = Date.now();
-                    const url = config.url + (config.url.includes('?') ? '&' : '?') + `_t=${timestamp}`;
-                    const response = await fetch(url);
-                    const data = await response.json();
-
-                    // 使用对应的解析器解析数据
-                    const result = config.parser(data);
-
-                    // 更新页面显示
-                    document.getElementById('ipip-ip').textContent = result.ip;
-                    document.getElementById('ipip-country').textContent = result.country + ' ' + result.city;
-                    setStatus('status-ipip', 'success');
-
-                    // 更新标题显示当前使用的 API
-                    if (titleElement) {
-                        titleElement.innerHTML = `<span class="status-indicator" id="status-ipip"></span><div class="title-text"><div class="title-main">国内测试</div><div class="title-subtitle">${config.name}</div></div>`;
-                        setStatus('status-ipip', 'success'); // 重新设置状态,因为 innerHTML 会清除
-                    }
-
-                    console.log(`[国内API:${config.name}] 成功: IP=${result.ip}, 位置=${result.country} ${result.city}`);
-                    return; // 成功则返回,不再尝试其他 API
-
-                } catch (error) {
-                    console.warn(`${config.name} 接口失败:`, error);
-                    // 继续尝试下一个 API
+            if (value.includes('.') && !value.includes(':')) {
+                const parts = value.split('.');
+                if (parts.length === 4) {
+                    return `${parts[0]}.${'*'.repeat(parts[1].length)}.${'*'.repeat(parts[2].length)}.${'*'.repeat(parts[3].length)}`;
                 }
             }
 
-            // 所有 API 都失败
-            document.getElementById('ipip-ip').innerHTML = '<span class="error">加载失败</span>';
-            document.getElementById('ipip-country').textContent = '';
-            document.getElementById('ipip-city').textContent = '';
-            setStatus('status-ipip', 'error');
-            console.error('所有国内测试 API 都失败');
+            if (value.includes(':')) {
+                const firstSegment = value.split(':')[0] || '****';
+                return `${firstSegment}:****:****:****:****:****:****:****`;
+            }
+
+            return value.length <= 2 ? '*'.repeat(Math.max(2, value.length)) : `${value.slice(0, 2)}${'*'.repeat(value.length - 2)}`;
+        }
+
+        function maskNetworkLocationValue(location) {
+            const value = String(location || '').trim();
+            if (!value || value === '未知') return value;
+
+            const tokens = value.split(/\s+/).filter(Boolean);
+            if (!tokens.length) return value;
+
+            return tokens.map((token, index) => {
+                if (index === 0 && /^[a-zA-Z]{2}$/.test(token)) {
+                    return token.toUpperCase();
+                }
+                return '*'.repeat(Math.max(2, token.length));
+            }).join(' ');
+        }
+
+        function stopNetworkFieldAnimation(fieldElement) {
+            if (!fieldElement) return;
+            if (fieldElement._privacyAnimFrame) {
+                cancelAnimationFrame(fieldElement._privacyAnimFrame);
+                fieldElement._privacyAnimFrame = null;
+            }
+        }
+
+        function animateNetworkFieldDisplay(fieldElement, targetText, durationMs = 160) {//逐字符替换速度
+            if (!fieldElement) return;
+            stopNetworkFieldAnimation(fieldElement);
+
+            const fromText = String(fieldElement.textContent || '');
+            const toText = String(targetText || '');
+            if (fromText === toText) {
+                fieldElement.textContent = toText;
+                return;
+            }
+
+            const maxLen = Math.max(fromText.length, toText.length);
+            const fromChars = fromText.padEnd(maxLen, ' ').split('');
+            const toChars = toText.padEnd(maxLen, ' ').split('');
+            const diffIndexes = [];
+            for (let i = 0; i < maxLen; i++) {
+                if (fromChars[i] !== toChars[i]) diffIndexes.push(i);
+            }
+
+            if (!diffIndexes.length) {
+                fieldElement.textContent = toText;
+                return;
+            }
+
+            const startTime = performance.now();
+            const frame = now => {
+                const progress = Math.min((now - startTime) / durationMs, 1);
+                const changedCount = Math.floor(progress * diffIndexes.length);
+
+                const currentChars = fromChars.slice();
+                for (let i = 0; i < changedCount; i++) {
+                    const idx = diffIndexes[i];
+                    currentChars[idx] = toChars[idx];
+                }
+
+                fieldElement.textContent = currentChars.join('').trimEnd();
+
+                if (progress < 1) {
+                    fieldElement._privacyAnimFrame = requestAnimationFrame(frame);
+                } else {
+                    fieldElement._privacyAnimFrame = null;
+                    fieldElement.textContent = toText;
+                }
+            };
+
+            fieldElement._privacyAnimFrame = requestAnimationFrame(frame);
+        }
+
+        function renderNetworkFieldDisplay(fieldElement, options = {}) {
+            if (!fieldElement) return;
+            if (fieldElement.dataset.displayState !== 'ready') return;
+            const { animate = false } = options;
+
+            const rawValue = String(fieldElement.dataset.rawValue || '').trim();
+            const maskType = fieldElement.dataset.maskType || 'location';
+
+            if (!rawValue) {
+                stopNetworkFieldAnimation(fieldElement);
+                fieldElement.textContent = '';
+                return;
+            }
+
+            let displayValue = rawValue;
+            if (!networkPrivacyVisible) {
+                displayValue = maskType === 'ip'
+                    ? maskNetworkIpValue(rawValue)
+                    : maskNetworkLocationValue(rawValue);
+            }
+
+            if (animate) {
+                animateNetworkFieldDisplay(fieldElement, displayValue);
+            } else {
+                stopNetworkFieldAnimation(fieldElement);
+                fieldElement.textContent = displayValue;
+            }
+        }
+
+        function setNetworkFieldValue(fieldId, rawValue, maskType) {
+            const fieldElement = document.getElementById(fieldId);
+            if (!fieldElement) return;
+
+            fieldElement.dataset.rawValue = String(rawValue || '').trim();
+            fieldElement.dataset.maskType = maskType;
+            fieldElement.dataset.displayState = 'ready';
+            renderNetworkFieldDisplay(fieldElement);
+
+            // IP 字段加载完成后立即就绪点击查询，不等待其它卡片
+            if (maskType === 'ip') {
+                makeIpClickable();
+            }
+        }
+
+        function setNetworkFieldError(fieldId, errorText) {
+            const fieldElement = document.getElementById(fieldId);
+            if (!fieldElement) return;
+
+            stopNetworkFieldAnimation(fieldElement);
+            fieldElement.dataset.rawValue = '';
+            fieldElement.dataset.displayState = 'error';
+            fieldElement.classList.remove('clickable', 'is-loading');
+            fieldElement.removeAttribute('title');
+            fieldElement.removeAttribute('aria-busy');
+            fieldElement.innerHTML = `<span class="error">${errorText}</span>`;
+        }
+
+        function clearNetworkFieldValue(fieldId) {
+            const fieldElement = document.getElementById(fieldId);
+            if (!fieldElement) return;
+
+            stopNetworkFieldAnimation(fieldElement);
+            fieldElement.dataset.rawValue = '';
+            fieldElement.dataset.displayState = 'empty';
+            fieldElement.classList.remove('clickable', 'is-loading');
+            fieldElement.removeAttribute('title');
+            fieldElement.removeAttribute('aria-busy');
+            fieldElement.textContent = '';
+        }
+
+        function refreshAllNetworkFieldDisplays(animate = false) {
+            NETWORK_FIELD_CONFIGS.forEach(({ id }) => {
+                const fieldElement = document.getElementById(id);
+                renderNetworkFieldDisplay(fieldElement, { animate });
+            });
+
+            applyNetworkCardFlag('ipip-country');
+            applyNetworkCardFlag('overseas-country');
+            applyNetworkCardFlag('cf-country');
+            applyNetworkCardFlag('twitter-country');
+        }
+
+        function toggleNetworkPrivacy(event) {
+            if (event) event.stopPropagation();
+            networkPrivacyVisible = !networkPrivacyVisible;
+            refreshAllNetworkFieldDisplays(true);
+        }
+
+        function bindNetworkCardPrivacyToggle() {
+            const cards = document.querySelectorAll('.network-cards-container .network-card');
+            cards.forEach(card => {
+                if (card.dataset.privacyToggleBound === '1') return;
+                card.dataset.privacyToggleBound = '1';
+                card.title = '点击卡片可显示/隐藏真实IP和地址';
+                card.addEventListener('click', toggleNetworkPrivacy);
+            });
+        }
+
+        // 根据卡片内国家缩写设置国旗角标
+        function applyNetworkCardFlag(countryElementId) {
+            const countryElement = document.getElementById(countryElementId);
+            if (!countryElement) return;
+
+            const networkCard = countryElement.closest('.network-card');
+            if (!networkCard) return;
+
+            const countryText = String(countryElement.dataset.rawValue || countryElement.textContent || '').trim();
+            const codeMatch = countryText.match(/\b([a-zA-Z]{2})\b/);
+            const countryCode = codeMatch ? codeMatch[1].toLowerCase() : '';
+
+            if (!countryCode) {
+                networkCard.classList.remove('has-flag-badge');
+                networkCard.style.removeProperty('--flag-badge-url');
+                return;
+            }
+
+            networkCard.style.setProperty('--flag-badge-url', `url("https://ipdata.co/flags/${countryCode}.png")`);
+            networkCard.classList.add('has-flag-badge');
+        }
+
+        // JSONP 请求工具（用于无 CORS 的接口）
+        function createJsonpRequest(url, callbackParam, timeoutMs = 8000) {
+            let settled = false;
+            let timeoutId = null;
+            let script = null;
+            let callbackScope = null;
+            let callbackKey = null;
+            let rejectPromise = null;
+
+            const cleanup = () => {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                if (script && script.parentNode) {
+                    script.parentNode.removeChild(script);
+                }
+                if (callbackScope && callbackKey) {
+                    try {
+                        delete callbackScope[callbackKey];
+                    } catch {
+                        callbackScope[callbackKey] = undefined;
+                    }
+                }
+            };
+
+            const promise = new Promise((resolve, reject) => {
+                rejectPromise = reject;
+
+                const finalize = (handler, value) => {
+                    if (settled) return;
+                    settled = true;
+                    cleanup();
+                    handler(value);
+                };
+
+                const callbackPath = `window.__EDT2_IP_TEST_.__${Date.now()}_${Math.floor(Math.random() * 1e16)}__`;
+                const callbackChain = callbackPath.replace(/^window\./, '').split('.');
+
+                callbackScope = window;
+                for (let i = 0; i < callbackChain.length - 1; i++) {
+                    const key = callbackChain[i];
+                    if (!callbackScope[key] || typeof callbackScope[key] !== 'object') {
+                        callbackScope[key] = {};
+                    }
+                    callbackScope = callbackScope[key];
+                }
+                callbackKey = callbackChain[callbackChain.length - 1];
+                callbackScope[callbackKey] = payload => finalize(resolve, payload);
+
+                const requestUrl = new URL(url);
+                requestUrl.searchParams.set(callbackParam, callbackPath);
+                requestUrl.searchParams.set('_t', Date.now().toString());
+
+                script = document.createElement('script');
+                script.src = requestUrl.toString();
+                script.async = true;
+                script.referrerPolicy = 'no-referrer';
+                script.onerror = () => finalize(reject, new Error(`JSONP load failed: ${url}`));
+
+                timeoutId = setTimeout(() => {
+                    finalize(reject, new Error(`JSONP timeout: ${url}`));
+                }, timeoutMs);
+
+                document.head.appendChild(script);
+            });
+
+            return {
+                promise,
+                cancel: () => {
+                    if (!settled && rejectPromise) {
+                        settled = true;
+                        cleanup();
+                        rejectPromise(new Error(`JSONP cancelled: ${url}`));
+                    } else {
+                        cleanup();
+                    }
+                }
+            };
+        }
+
+        // 获取国内测试数据 (多源并发：HEAD + JSONP，提取IP后查询ipinfo)
+        async function fetchIpipData() {
+            setStatus('status-ipip', 'loading');
+
+            const statusElement = document.querySelector('#status-ipip');
+            const titleElement = statusElement ? statusElement.parentElement : null;
+            const testSources = [
+                {
+                    type: 'head',
+                    name: '字节跳动',
+                    url: 'https://perfops2.byte-test.com/500b-bench.jpg',
+                    ipHeader: 'X-Request-Ip'
+                },
+                {
+                    type: 'head',
+                    name: '字节跳动',
+                    url: 'https://perfops.byte-test.com',
+                    ipHeader: 'X-Request-Ip'
+                },
+                {
+                    type: 'head',
+                    name: '网易科技',
+                    url: 'https://necaptcha.nosdn.127.net/ab7f4275c1744aa28e0a8f3a1c58c532.png',
+                    ipHeader: 'cdn-user-ip'
+                },
+                {
+                    type: 'jsonp',
+                    name: '腾讯新闻',
+                    url: 'https://r.inews.qq.com/api/ip2city?otype=jsonp',
+                    callbackParam: 'callback',
+                    extractIp: payload => payload?.ip
+                },
+                {
+                    type: 'jsonp',
+                    name: '阿里巴巴',
+                    url: `https://${Date.now()}.dns-detect.alicdn.com/api/detect/DescribeDNSLookup`,
+                    callbackParam: 'cb',
+                    extractIp: payload => payload?.content?.localIp
+                }
+            ];
+            const requestTasks = testSources.map(sourceConfig => {
+                if (sourceConfig.type === 'jsonp') {
+                    const jsonpTask = createJsonpRequest(sourceConfig.url, sourceConfig.callbackParam);
+                    return {
+                        cancel: jsonpTask.cancel,
+                        promise: jsonpTask.promise.then(payload => {
+                            const requestIp = String(sourceConfig.extractIp(payload) || '').trim();
+                            if (!requestIp) {
+                                throw new Error(`${sourceConfig.url} missing jsonp ip`);
+                            }
+                            return {
+                                source: sourceConfig.url,
+                                requestIp,
+                                providerName: sourceConfig.name
+                            };
+                        })
+                    };
+                }
+
+                const controller = new AbortController();
+                return {
+                    cancel: () => controller.abort(),
+                    promise: (async () => {
+                        const url = `${sourceConfig.url}${sourceConfig.url.includes('?') ? '&' : '?'}_t=${Date.now()}`;
+                        const response = await fetch(url, {
+                            method: 'HEAD',
+                            cache: 'no-store',
+                            signal: controller.signal
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`${sourceConfig.url} HTTP ${response.status}`);
+                        }
+
+                        const requestIp = String(response.headers.get(sourceConfig.ipHeader) || '').trim();
+                        if (!requestIp) {
+                            throw new Error(`${sourceConfig.url} missing ${sourceConfig.ipHeader}`);
+                        }
+
+                        return {
+                            source: sourceConfig.url,
+                            requestIp,
+                            providerName: sourceConfig.name
+                        };
+                    })()
+                };
+            });
+
+            try {
+                const fastestSuccess = await Promise.any(requestTasks.map(task => task.promise));
+                requestTasks.forEach(task => task.cancel && task.cancel());
+
+                const infoResponse = await fetch(
+                    `https://api.cmliussss.net/api/ipinfo?ip=${encodeURIComponent(fastestSuccess.requestIp)}&_t=${Date.now()}`
+                );
+                if (!infoResponse.ok) {
+                    throw new Error(`ipinfo HTTP ${infoResponse.status}`);
+                }
+
+                const info = await infoResponse.json();
+                const ip = (info.ip || fastestSuccess.requestIp || '未知').trim();
+                const location = `${info.country_code || '未知'} ${info.asn || ''} ${info.as_name || ''}`.trim();
+
+                setNetworkFieldValue('ipip-ip', ip, 'ip');
+                setNetworkFieldValue('ipip-country', location || '未知', 'location');
+                applyNetworkCardFlag('ipip-country');
+                setStatus('status-ipip', 'success');
+
+                if (titleElement) {
+                    titleElement.innerHTML = `<span class="status-indicator" id="status-ipip"></span><div class="title-text"><div class="title-main">国内测试</div><div class="title-subtitle">${fastestSuccess.providerName}</div></div>`;
+                    setStatus('status-ipip', 'success');
+                }
+
+                console.log(`[国内测试] 成功: IP=${ip}, 位置=${location}, 来源=${fastestSuccess.source}`);
+            } catch (error) {
+                requestTasks.forEach(task => task.cancel && task.cancel());
+
+                setNetworkFieldError('ipip-ip', '加载失败');
+                clearNetworkFieldValue('ipip-country');
+                applyNetworkCardFlag('ipip-country');
+                const ipipCityElement = document.getElementById('ipip-city');
+                if (ipipCityElement) {
+                    ipipCityElement.textContent = '';
+                }
+                setStatus('status-ipip', 'error');
+                console.error('国内测试 所有测试源都失败:', error);
+            }
         }
 
         // 获取国外测试数据
         async function fetchOverseasTestData() {
             setStatus('status-overseas', 'loading');
-
             // API 配置：URL + 字段映射
             const apis = [
                 {
@@ -15338,8 +15769,9 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                     const { ip, loc } = api.parse(await response.json());
                     const edgeIp = ip || '未知';
 
-                    document.getElementById('overseas-ip').textContent = edgeIp;
-                    document.getElementById('overseas-country').textContent = loc || '未知';
+                    setNetworkFieldValue('overseas-ip', edgeIp, 'ip');
+                    setNetworkFieldValue('overseas-country', loc || '未知', 'location');
+                    applyNetworkCardFlag('overseas-country');
                     setStatus('status-overseas', 'success');
                     console.log(`[国外测试] 成功: IP=${edgeIp}, 位置=${loc}`);
                     return;
@@ -15349,8 +15781,9 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             }
 
             // 所有 API 都失败
-            document.getElementById('overseas-ip').innerHTML = '<span class="error">加载失败</span>';
-            document.getElementById('overseas-country').textContent = '';
+            setNetworkFieldError('overseas-ip', '加载失败');
+            clearNetworkFieldValue('overseas-country');
+            applyNetworkCardFlag('overseas-country');
             setStatus('status-overseas', 'error');
             console.error('国外测试 所有API都失败');
         }
@@ -15365,14 +15798,16 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 
                 const cfIp = data.ip || '未知';
                 const cfLoc = ((data.country || '') + ' ' + (data.org || '')).trim() || '未知';
-                document.getElementById('cf-ip').textContent = cfIp;
-                document.getElementById('cf-country').textContent = cfLoc;
+                setNetworkFieldValue('cf-ip', cfIp, 'ip');
+                setNetworkFieldValue('cf-country', cfLoc, 'location');
+                applyNetworkCardFlag('cf-country');
                 setStatus('status-cf', 'success');
 
                 console.log(`[CloudFlare] 成功: IP=${cfIp}, 位置=${cfLoc}`);
             } catch (error) {
-                document.getElementById('cf-ip').innerHTML = '<span class="error">加载失败</span>';
-                document.getElementById('cf-country').textContent = '';
+                setNetworkFieldError('cf-ip', '加载失败');
+                clearNetworkFieldValue('cf-country');
+                applyNetworkCardFlag('cf-country');
                 setStatus('status-cf', 'error');
                 console.error('CloudFlare 接口错误:', error);
             }
@@ -15397,14 +15832,16 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 
                 const twIp = data.ip || '未知';
                 const twLoc = ((data.loc || '') + ' ' + (data.colo || '')).trim() || '未知';
-                document.getElementById('twitter-ip').textContent = twIp;
-                document.getElementById('twitter-country').textContent = twLoc;
+                setNetworkFieldValue('twitter-ip', twIp, 'ip');
+                setNetworkFieldValue('twitter-country', twLoc, 'location');
+                applyNetworkCardFlag('twitter-country');
                 setStatus('status-twitter', 'success');
 
                 console.log(`[Twitter] 成功: IP=${twIp}, 位置=${twLoc}`);
             } catch (error) {
-                document.getElementById('twitter-ip').innerHTML = '<span class="error">翻墙失败</span>';
-                document.getElementById('twitter-country').textContent = '';
+                setNetworkFieldError('twitter-ip', '翻墙失败');
+                clearNetworkFieldValue('twitter-country');
+                applyNetworkCardFlag('twitter-country');
                 setStatus('status-twitter', 'error');
                 console.error('推特入口接口错误:', error);
             }
@@ -15418,6 +15855,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             // 检查容器是否存在
             const container = document.querySelector('.network-cards-container');
             if (!container) return;
+            bindNetworkCardPrivacyToggle();
 
             // 设置加载标志
             networkInfoLoaded = true;
@@ -15452,28 +15890,37 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             const ipElements = document.querySelectorAll('.ip-text');
 
             ipElements.forEach(element => {
-                const ipText = element.textContent.trim();
+                const rawIpText = String(element.dataset.rawValue || element.textContent || '').trim();
 
                 // 跳过已经标记为错误、加载中、未知的元素
                 if (element.querySelector('.error') ||
-                    ipText === '加载中...' ||
-                    ipText === '未知' ||
+                    element.dataset.displayState === 'error' ||
+                    rawIpText === '加载中...' ||
+                    rawIpText === '未知' ||
+                    !rawIpText ||
                     element.classList.contains('clickable')) {
                     return;
                 }
 
                 // 添加可点击样式
                 element.classList.add('clickable');
+                element.title = '点击查询IP详细信息';
 
-                element.addEventListener('click', function () {
-                    let ipText = this.textContent.trim();
+                element.addEventListener('click', function (event) {
+                    event.stopPropagation();
 
-                    // 跳过显示"加载中..."或"未知"的元素
-                    if (ipText === '加载中...' || ipText === '未知') {
+                    if (this.dataset.displayState !== 'ready') {
                         return;
                     }
 
-                    fetchAndShowIpDetail(ipText, this);
+                    const rawIp = String(this.dataset.rawValue || this.textContent || '').trim();
+
+                    // 跳过显示"加载中..."或"未知"的元素
+                    if (!rawIp || rawIp === '加载中...' || rawIp === '未知') {
+                        return;
+                    }
+
+                    fetchAndShowIpDetail(rawIp, this);
                 });
             });
         }
@@ -16972,3 +17419,4 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 </body>
 
 </html>
+
