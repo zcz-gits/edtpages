@@ -6595,8 +6595,8 @@
                             <div class="network-card-title">
                                 <span class="status-indicator" id="status-twitter"></span>
                                 <div class="title-text">
-                                    <div class="title-main">翻墙测试</div>
-                                    <div class="title-subtitle">X.com</div>
+                                    <div class="title-main">墙外测试</div>
+                                    <div class="title-subtitle">!CN-Test</div>
                                 </div>
                             </div>
                             <div class="network-info-content">
@@ -6604,12 +6604,12 @@
                                 <div class="location-text">
                                     <span id="twitter-country" class="country-text">-</span>
                                 </div>
-                                <div class="network-tip">· 您访问推特(x.com)所使用的IP</div>
+                                <div class="network-tip">· 您访问墙外站点所使用的IP</div>
                             </div>
                         </div>
                     </div>
                     <small style="font-size: 12px; color: #9ca3af; margin-top: 6px; display: block;">💡 <b>国内测试</b>
-                        是由您梯子的 <b>分流规则</b> 决定的，<b>国外测试</b> 是由您的 <b>优选IP</b> 决定的，而 <b>CF、Twitter、ChatGPT</b> 是由您的
+                        是由您梯子的 <b>分流规则</b> 决定的，<b>国外测试</b> 是由您的 <b>优选IP</b> 决定的，而 <b>CF、墙外入口、ChatGPT</b> 是由您的
                         <b>PROXYIP</b> 决定的。</small>
                     <div class="module-content" style="display: none;" id="network-module-content">
                         <!-- 延迟测试卡片 -->
@@ -15618,6 +15618,27 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             };
         }
 
+        // 统一调用 IP 详情接口（按 IP 查询）
+        async function fetchIpInfoByIp(ip) {
+            const requestIp = String(ip || '').trim();
+            if (!requestIp) {
+                throw new Error('missing ip');
+            }
+
+            const infoResponse = await fetch(
+                `https://api.cmliussss.net/api/ipinfo?ip=${encodeURIComponent(requestIp)}&_t=${Date.now()}`
+            );
+            if (!infoResponse.ok) {
+                throw new Error(`ipinfo HTTP ${infoResponse.status}`);
+            }
+
+            return infoResponse.json();
+        }
+
+        function formatIpInfoLocation(info) {
+            return `${info.country_code || '未知'} ${info.asn || ''} ${info.as_name || ''}`.trim() || '未知';
+        }
+
         // 获取国内测试数据 (多源并发：HEAD + JSONP，提取IP后查询ipinfo)
         async function fetchIpipData() {
             setStatus('status-ipip', 'loading');
@@ -15717,16 +15738,9 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 const fastestSuccess = await Promise.any(requestTasks.map(task => task.promise));
                 requestTasks.forEach(task => task.cancel && task.cancel());
 
-                const infoResponse = await fetch(
-                    `https://api.cmliussss.net/api/ipinfo?ip=${encodeURIComponent(fastestSuccess.requestIp)}&_t=${Date.now()}`
-                );
-                if (!infoResponse.ok) {
-                    throw new Error(`ipinfo HTTP ${infoResponse.status}`);
-                }
-
-                const info = await infoResponse.json();
-                const ip = (info.ip || fastestSuccess.requestIp || '未知').trim();
-                const location = `${info.country_code || '未知'} ${info.asn || ''} ${info.as_name || ''}`.trim();
+                const info = await fetchIpInfoByIp(fastestSuccess.requestIp);
+                const ip = String(info.ip || fastestSuccess.requestIp || '未知').trim();
+                const location = formatIpInfoLocation(info);
 
                 setNetworkFieldValue('ipip-ip', ip, 'ip');
                 setNetworkFieldValue('ipip-country', location || '未知', 'location');
@@ -15820,37 +15834,93 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             }
         }
 
-        // 获取推特入口数据
+        // 获取墙外测试数据（谷歌优先，失败回退 X.com）
         async function fetchTwitterData() {
             setStatus('status-twitter', 'loading');
-            try {
-                const timestamp = Date.now();
-                const response = await fetch(`https://help.x.com/cdn-cgi/trace?_t=${timestamp}`);
-                const text = await response.text();
+            const statusElement = document.querySelector('#status-twitter');
+            const titleElement = statusElement ? statusElement.parentElement : null;
 
-                // 解析文本格式的响应 (key=value 格式,每行一个)
-                const data = {};
-                text.split('\n').forEach(line => {
-                    const [key, value] = line.split('=');
-                    if (key && value) {
-                        data[key.trim()] = value.trim();
+            const renderTwitterTitle = (subtitle) => {
+                if (!titleElement) return;
+                titleElement.innerHTML = `<span class="status-indicator" id="status-twitter"></span><div class="title-text"><div class="title-main">墙外测试</div><div class="title-subtitle">${subtitle}</div></div>`;
+            };
+
+            const testSources = [
+                {
+                    name: '谷歌(Google)',
+                    getIp: async () => {
+                        const jsonpTask = createJsonpRequest('https://jsonp-ip.appspot.com/', 'callback', 8000);
+                        try {
+                            const payload = await jsonpTask.promise;
+                            const requestIp = String(payload?.ip || '').trim();
+                            if (!requestIp) {
+                                throw new Error('google jsonp missing ip');
+                            }
+                            return requestIp;
+                        } finally {
+                            jsonpTask.cancel();
+                        }
                     }
-                });
+                },
+                {
+                    name: '推特(X.com)',
+                    getIp: async () => {
+                        const response = await fetch(`https://help.x.com/cdn-cgi/trace?_t=${Date.now()}`, {
+                            cache: 'no-store'
+                        });
+                        if (!response.ok) {
+                            throw new Error(`x trace HTTP ${response.status}`);
+                        }
 
-                const twIp = data.ip || '未知';
-                const twLoc = ((data.loc || '') + ' ' + (data.colo || '')).trim() || '未知';
+                        const text = await response.text();
+                        const ipLine = text.split('\n').find(line => line.startsWith('ip='));
+                        const requestIp = String(ipLine ? ipLine.slice(3) : '').trim();
+                        if (!requestIp) {
+                            throw new Error('x trace missing ip');
+                        }
+                        return requestIp;
+                    }
+                }
+            ];
+
+            try {
+                let fastestSuccess = null;
+                for (const source of testSources) {
+                    try {
+                        const requestIp = await source.getIp();
+                        fastestSuccess = {
+                            providerName: source.name,
+                            requestIp
+                        };
+                        break;
+                    } catch (sourceError) {
+                        console.log(`[墙外测试] ${source.name} 失败: ${sourceError.message}`);
+                    }
+                }
+
+                if (!fastestSuccess) {
+                    throw new Error('all outside entry sources failed');
+                }
+
+                const info = await fetchIpInfoByIp(fastestSuccess.requestIp);
+                const twIp = String(info.ip || fastestSuccess.requestIp || '未知').trim();
+                const twLoc = formatIpInfoLocation(info);
                 setNetworkFieldValue('twitter-ip', twIp, 'ip');
                 setNetworkFieldValue('twitter-country', twLoc, 'location');
                 applyNetworkCardFlag('twitter-country');
                 setStatus('status-twitter', 'success');
+                renderTwitterTitle(fastestSuccess.providerName);
+                setStatus('status-twitter', 'success');
 
-                console.log(`[Twitter] 成功: IP=${twIp}, 位置=${twLoc}`);
+                console.log(`[墙外测试] 成功: IP=${twIp}, 位置=${twLoc}, 来源=${fastestSuccess.providerName}`);
             } catch (error) {
                 setNetworkFieldError('twitter-ip', '翻墙失败');
                 clearNetworkFieldValue('twitter-country');
                 applyNetworkCardFlag('twitter-country');
                 setStatus('status-twitter', 'error');
-                console.error('推特入口接口错误:', error);
+                renderTwitterTitle('Google → X.com');
+                setStatus('status-twitter', 'error');
+                console.error('墙外测试接口错误:', error);
             }
         }
 
