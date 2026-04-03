@@ -8815,6 +8815,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         let cachedWorkerVersionRawText = '';
         let cachedLatestOnlineVersion = 0;
         let cachedCurrentVersionNumber = 0;
+        let cachedCurrentVersionFullText = '';
 
         function parseForcedLowPerformanceMode() {
             try {
@@ -9431,8 +9432,10 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             const digitsOnly = rawText.replace(/\D/g, '');
             const text = digitsOnly || rawText;
             if (text) {
-                versionValue.textContent = "v2.1." + text;
+                cachedCurrentVersionFullText = text;
                 cachedCurrentVersionNumber = parseVersionNumber(text);
+                const shortText = text.slice(0, 8);
+                versionValue.textContent = "v2.1." + shortText;
                 versionBadge.dataset.health = '';
                 versionBadge.hidden = false;
                 versionBadge.style.display = 'flex';
@@ -9440,6 +9443,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             } else {
                 versionValue.textContent = '';
                 cachedCurrentVersionNumber = 0;
+                cachedCurrentVersionFullText = '';
                 versionBadge.dataset.health = '';
                 versionBadge.hidden = true;
                 versionBadge.style.display = 'none';
@@ -9610,10 +9614,11 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             if (!versionBadge || !versionValue || !modal || !latestVersionValueEl || !currentVersionValueEl) return;
             if (versionBadge.hidden || versionBadge.style.display === 'none') return;
 
-            const currentVersion = cachedCurrentVersionNumber || parseVersionNumber(String(versionValue.textContent || '').replace(/^v2\.1\./, ''));
+            const currentVersionFullText = cachedCurrentVersionFullText || String(versionValue.textContent || '').replace(/^v2\.1\./, '');
+            const currentVersion = parseVersionNumber(currentVersionFullText);
             const latestVersion = cachedLatestOnlineVersion || 0;
             latestVersionValueEl.textContent = `v2.1.${latestVersion}`;
-            currentVersionValueEl.textContent = `v2.1.${currentVersion || 0}`;
+            currentVersionValueEl.textContent = `v2.1.${currentVersionFullText || currentVersion || 0}`;
 
             let healthKey = versionBadge.dataset.health || '';
             if (!healthKey) {
