@@ -7617,7 +7617,8 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                     </svg>
                 </a>
                 <div class="social-link social-version" id="versionBadge" title="当前版本" role="button" tabindex="0"
-                    onclick="openVersionInfoModal()" onkeydown="onVersionBadgeKeydown(event)" hidden style="display: none;">
+                    onclick="openVersionInfoModal()" onkeydown="onVersionBadgeKeydown(event)" hidden
+                    style="display: none;">
                     <span id="versionValue"></span>
                 </div>
                 <!-- 返回顶部按钮 -->
@@ -7646,12 +7647,17 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             <button type="button" class="modal-close" onclick="closeVersionInfoModal()">×</button>
             <h2 class="version-info-title">🚀 关于 edgetunnel</h2>
             <div class="version-info-summary state-outdated" id="versionInfoSummary">
-                <p id="latestVersionInfoText" class="version-info-line"><strong>最新版本:</strong> <span id="latestVersionInfoValue">v0</span></p>
-                <p id="currentVersionInfoText" class="version-info-line"><strong>当前版本:</strong> <span id="currentVersionInfoValue">v0</span> <span id="currentVersionStateText" class="version-state-tip is-outdated">需要更新</span></p>
+                <p id="latestVersionInfoText" class="version-info-line"><strong>最新版本:</strong> <span
+                        id="latestVersionInfoValue">v0</span></p>
+                <p id="currentVersionInfoText" class="version-info-line"><strong>当前版本:</strong> <span
+                        id="currentVersionInfoValue">v0</span> <span id="currentVersionStateText"
+                        class="version-state-tip is-outdated">需要更新</span></p>
             </div>
             <div class="version-info-actions">
-                <button type="button" class="btn btn-version-copy" onclick="copyLatestWorkerSourceToClipboard()">📋 复制最新Worker.js源码 到剪贴板</button>
-                <button type="button" class="btn btn-version-download" onclick="openLatestPagesZipDownload()">📦 下载最新Pages.zip源码 上传部署</button>
+                <button type="button" class="btn btn-version-copy" onclick="copyLatestWorkerSourceToClipboard()">📋
+                    复制最新Worker.js源码 到剪贴板</button>
+                <button type="button" class="btn btn-version-download" onclick="openLatestPagesZipDownload()">📦
+                    下载最新Pages.zip源码 上传部署</button>
                 <button type="button" class="btn btn-secondary" onclick="closeVersionInfoModal()">取消</button>
             </div>
         </div>
@@ -8809,6 +8815,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         let cachedWorkerVersionRawText = '';
         let cachedLatestOnlineVersion = 0;
         let cachedCurrentVersionNumber = 0;
+        let cachedCurrentVersionFullText = '';
 
         function parseForcedLowPerformanceMode() {
             try {
@@ -9425,8 +9432,10 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             const digitsOnly = rawText.replace(/\D/g, '');
             const text = digitsOnly || rawText;
             if (text) {
-                versionValue.textContent = "v2.1." + text;
+                cachedCurrentVersionFullText = text;
                 cachedCurrentVersionNumber = parseVersionNumber(text);
+                const shortText = text.slice(0, 8);
+                versionValue.textContent = "v2.1." + shortText;
                 versionBadge.dataset.health = '';
                 versionBadge.hidden = false;
                 versionBadge.style.display = 'flex';
@@ -9434,6 +9443,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             } else {
                 versionValue.textContent = '';
                 cachedCurrentVersionNumber = 0;
+                cachedCurrentVersionFullText = '';
                 versionBadge.dataset.health = '';
                 versionBadge.hidden = true;
                 versionBadge.style.display = 'none';
@@ -9451,10 +9461,10 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         function getVersionHealthMeta(healthKey) {
             if (healthKey === 'latest') {
                 return {
-                    titleSuffix: '最新版本',
+                    titleSuffix: '已是最新',
                     summaryClass: 'state-latest',
                     tipClass: 'is-latest',
-                    tipText: '最新版本'
+                    tipText: '已是最新'
                 };
             }
             if (healthKey === 'preview') {
@@ -9534,10 +9544,6 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 
         async function updateVersionBadgeHealthByLatest(currentVersion) {
             const currentVersionNumber = parseVersionNumber(currentVersion);
-            if (!currentVersionNumber) {
-                return;
-            }
-
             const latestVersionNumber = await fetchLatestOnlineVersionNumber();
             const diff = currentVersionNumber - latestVersionNumber;
             console.log(`[Version] 版本比较: current=${currentVersionNumber}, latest=${latestVersionNumber}, diff=${diff}`);
@@ -9547,45 +9553,48 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
         async function loadVersionByUUID(uuid) {
             const uuidValue = String(uuid || '').trim();
             if (!uuidValue) {
-                updateVersionBadge('');
+                updateVersionBadge(0);
+                await updateVersionBadgeHealthByLatest(0);
                 return;
             }
 
-            try {
-                const response = await fetch(`/version?_t=${Date.now()}&uuid=${encodeURIComponent(uuidValue)}`, {
-                    method: 'GET',
-                    headers: {
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
-                    }
-                });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const maxRetries = 3;
+            let lastError = null;
 
-                let data;
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                    data = await response.json();
-                } catch (_) {
-                    updateVersionBadge('');
-                    return;
-                }
+                    const response = await fetch(`/version?_t=${Date.now()}&uuid=${encodeURIComponent(uuidValue)}`, {
+                        method: 'GET',
+                        headers: {
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
+                        }
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-                if (data && typeof data === 'object' && Object.prototype.hasOwnProperty.call(data, 'Version')) {
-                    const currentVersion = parseVersionNumber(data.Version);
-                    console.log(`[Version] 当前版本识别: raw="${data.Version}", parsed=${currentVersion}`);
-                    if (currentVersion) {
-                        updateVersionBadge(currentVersion);
-                        await updateVersionBadgeHealthByLatest(currentVersion);
-                    } else {
-                        updateVersionBadge('');
+                    const data = await response.json();
+                    if (!data || typeof data !== 'object' || !Object.prototype.hasOwnProperty.call(data, 'Version')) {
+                        throw new Error('missing Version field');
                     }
-                } else {
-                    updateVersionBadge('');
+
+                    const currentVersion = parseVersionNumber(data.Version);
+                    console.log(`[Version] 当前版本识别: raw="${data.Version}", parsed=${currentVersion}, attempt=${attempt}/${maxRetries}`);
+                    updateVersionBadge(currentVersion);
+                    await updateVersionBadgeHealthByLatest(currentVersion);
+                    return;
+                } catch (error) {
+                    lastError = error;
+                    console.warn(`[Version] 获取版本号失败(第${attempt}/${maxRetries}次):`, error);
+                    if (attempt < maxRetries) {
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                    }
                 }
-            } catch (error) {
-                console.warn('[Version] 获取版本号失败:', error);
-                updateVersionBadge('');
             }
+
+            console.warn('[Version] 获取版本号重试3次仍失败，按 0 处理:', lastError);
+            updateVersionBadge(0);
+            await updateVersionBadgeHealthByLatest(0);
         }
 
         function onVersionBadgeKeydown(event) {
@@ -9605,10 +9614,11 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             if (!versionBadge || !versionValue || !modal || !latestVersionValueEl || !currentVersionValueEl) return;
             if (versionBadge.hidden || versionBadge.style.display === 'none') return;
 
-            const currentVersion = cachedCurrentVersionNumber || parseVersionNumber(String(versionValue.textContent || '').replace(/^v2\.1\./, ''));
+            const currentVersionFullText = cachedCurrentVersionFullText || String(versionValue.textContent || '').replace(/^v2\.1\./, '');
+            const currentVersion = parseVersionNumber(currentVersionFullText);
             const latestVersion = cachedLatestOnlineVersion || 0;
             latestVersionValueEl.textContent = `v2.1.${latestVersion}`;
-            currentVersionValueEl.textContent = `v2.1.${currentVersion || 0}`;
+            currentVersionValueEl.textContent = `v2.1.${currentVersionFullText || currentVersion || 0}`;
 
             let healthKey = versionBadge.dataset.health || '';
             if (!healthKey) {
@@ -16227,18 +16237,51 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 throw new Error('missing ip');
             }
 
-            const infoResponse = await fetch(
-                `https://api.cmliussss.net/api/ipinfo?ip=${encodeURIComponent(requestIp)}&_t=${Date.now()}`
-            );
-            if (!infoResponse.ok) {
-                throw new Error(`ipinfo HTTP ${infoResponse.status}`);
-            }
+            const apis = [
+                {
+                    name: 'cm-eo',
+                    url: `https://api.cmliussss.net/api/ipinfo?ip=${encodeURIComponent(requestIp)}`
+                }, 
+                {
+                    name: 'cm-cf',
+                    url: `https://cf.090227.xyz/api/ipsb?ip=${encodeURIComponent(requestIp)}`
+                }
+            ];
 
-            return infoResponse.json();
+            const requestTasks = apis.map(async api => {
+                const response = await fetch(api.url, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`${api.name} HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                if (!data || typeof data !== 'object') {
+                    throw new Error(`${api.name} invalid payload`);
+                }
+                return data;
+            });
+
+            try {
+                return await Promise.any(requestTasks);
+            } catch (error) {
+                throw new Error(`ipinfo all failed for ${requestIp}`);
+            }
         }
 
         function formatIpInfoLocation(info) {
-            return `${info.country_code || '未知'} ${info.asn || ''} ${info.as_name || ''}`.trim() || '未知';
+            const countryCode = String(info?.country_code || '未知').trim() || '未知';
+            const rawAsn = info?.asn;
+            const asnText = rawAsn === undefined || rawAsn === null
+                ? ''
+                : (/^\d+$/.test(String(rawAsn).trim()) ? `AS${String(rawAsn).trim()}` : String(rawAsn).trim());
+            const asnName = String(
+                info?.as_name ||
+                info?.asn_organization ||
+                info?.organization ||
+                info?.isp ||
+                ''
+            ).trim();
+
+            return `${countryCode} ${asnText} ${asnName}`.trim() || '未知';
         }
 
         // 获取国内测试数据 (多源并发：HEAD + JSONP，提取IP后查询ipinfo)
