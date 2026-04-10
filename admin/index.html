@@ -6171,16 +6171,24 @@
             align-self: flex-start;
             width: fit-content;
             max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .ip-text.clickable {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            display: inline-block;
+            position: relative;
+            width: fit-content;
+            max-width: 100%;
+            padding-right: 20px;
         }
 
         .ip-text.clickable::after {
             content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
             width: 13px;
             height: 13px;
             flex-shrink: 0;
@@ -6189,12 +6197,12 @@
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232196F3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
             opacity: 0.9;
             transition: transform 0.2s ease, opacity 0.2s ease;
-            transform: translateY(0.5px);
+            transform: translateY(-50%);
         }
 
         .ip-text.clickable:hover::after {
             opacity: 1;
-            transform: translateY(0.5px) scale(1.08);
+            transform: translateY(-50%) scale(1.08);
         }
 
         .ip-text.clickable.is-loading::after {
@@ -6203,7 +6211,7 @@
             border-top-color: #2196F3;
             border-radius: 50%;
             opacity: 1;
-            transform: translateY(0.5px);
+            transform: translateY(-50%);
             animation: ipIconSpin 0.9s linear infinite;
         }
 
@@ -6214,11 +6222,11 @@
 
         @keyframes ipIconSpin {
             from {
-                transform: translateY(0.5px) rotate(0deg);
+                transform: translateY(-50%) rotate(0deg);
             }
 
             to {
-                transform: translateY(0.5px) rotate(360deg);
+                transform: translateY(-50%) rotate(360deg);
             }
         }
 
