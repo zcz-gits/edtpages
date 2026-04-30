@@ -14393,7 +14393,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                     if (!response.ok) throw new Error('Primary API failed');
                 } catch (e) {
                     console.warn('Primary IP API failed, trying fallback...', e);
-                    response = await fetch(`https://api.cmliussss.net/api/ipapi?ip=${cleanIp}`);
+                    response = await fetch(`https://api.090227.xyz/api/ipapi?ip=${cleanIp}`);
                     if (!response.ok) throw new Error('Fallback API failed');
                 }
 
@@ -17420,12 +17420,8 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
 
             const apis = [
                 {
-                    name: 'cm-eo',
-                    url: `https://api.cmliussss.net/api/ipinfo?ip=${encodeURIComponent(requestIp)}`
-                },
-                {
                     name: 'cm-cf',
-                    url: `https://cf.090227.xyz/api/ipsb?ip=${encodeURIComponent(requestIp)}`
+                    url: `https://api.090227.xyz/api/ipsb?ip=${encodeURIComponent(requestIp)}`
                 }
             ];
 
@@ -17614,7 +17610,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             // API 配置：URL + 字段映射
             const apis = [
                 {
-                    url: `https://api.cmliussss.net/api/ipinfo?_t=${Date.now()}`,
+                    url: `https://api.090227.xyz/api/ipinfo?_t=${Date.now()}`,
                     parse: d => ({ ip: d.ip, loc: `${d.country_code || '未知'} ${d.asn || ''} ${d.as_name || ''}`.trim() })
                 },
                 {
@@ -18622,7 +18618,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
             window[config.verificationTimeouts][proxyIp] = timeoutId;
 
             try {
-                const response = await fetch(`https://api.check.proxyip.cmliussss.net/check?proxyip=${proxyIp}`, { signal });
+                const response = await fetch(`https://api.090227.xyz/check?proxyip=${proxyIp}`, { signal });
                 clearTimeout(window[config.verificationTimeouts][proxyIp]);
 
                 if (response.ok) {
