@@ -9853,6 +9853,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                 .network-warning-message {
                     color: rgba(255, 255, 255, 0.92);
                     font-weight: 680;
+                    white-space: pre-line;
                 }
 
                 .network-warning-summary {
@@ -10796,7 +10797,7 @@ vless://7b102311-43fd-4e8f-977e-8090623c101d@edt-pages.github.io:443?security=tl
                             kind: "non-cn",
                             heading: "红牌警告",
                             title: "检测到当前网络出口不是 CN 直连",
-                            message: "当前在线优选检测已成功完成，但返回的出口地区代码不是 CN。请确认浏览器当前访问链路是否经过代理、VPN 或境外网络后再进行优选，否则延迟与测速结果不能代表 CN 直连环境。",
+                            message: "请确认浏览器当前网络是否经过了 代理、VPN 或 境外网络，\n在线优选仅有 CN 直连网络环境才可以实现！",
                             rows: nonCn,
                             details: completed
                         };
